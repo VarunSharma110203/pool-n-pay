@@ -1,6 +1,8 @@
+
+Pool-n-Pay: The Simple Way to Manage Group Expenses
+
 LINK: https://sage-travesseiro-328dff.netlify.app/
 
-LOOM VIDEO: https://www.loom.com/share/1e082727cb81445a8ce3f078c74fec68?sid=7f74ef3b-a688-48aa-8130-3a3fe6c7e3c4
 
 *A hassle-free expense manager for trips and group outings. Pool your money first, then track your spending. No more chasing friends for money!*
 
