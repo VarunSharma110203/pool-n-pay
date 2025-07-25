@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pool & Split - Group Expense Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: flex; /* Use flex for centering */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Simple loading spinner */
+        #loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <!-- Loading View -->
+        <div id="view-loading" class="view active w-full h-full">
+            <div id="loader"></div>
+            <p class="mt-4 text-gray-400">Authenticating...</p>
+        </div>
+
+        <!-- Welcome View -->
+        <div id="view-welcome" class="view w-full max-w-md text-center">
+            <div id="user-info-welcome" class="flex flex-col items-center mb-8">
+                <img id="user-photo" src="" class="w-20 h-20 rounded-full mb-4 border-4 border-gray-700">
+                <h2 class="text-3xl font-bold">Hi, <span id="user-name"></span>!</h2>
+            </div>
+            <div class="space-y-4 w-full">
+                <button id="show-create-pool-view-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg transition duration-300 text-lg">Create a New Pool</button>
+                <button id="show-join-pool-view-btn" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-lg transition duration-300 text-lg">Join an Existing Pool</button>
+            </div>
+            <div class="mt-8 w-full">
+                <h3 class="text-xl font-semibold mb-4 text-gray-300">Your Pools</h3>
+                <div id="previous-pools-list" class="space-y-3 text-left">
+                    <!-- Previous pools will be dynamically inserted here -->
+                </div>
+            </div>
+             <button id="signout-btn" class="mt-8 text-sm text-red-400 hover:text-red-300">Sign Out</button>
+        </div>
+        
+        <!-- Create Pool View -->
+        <div id="view-create-pool" class="view w-full max-w-md">
+             <button class="back-to-welcome-btn mb-4 text-indigo-400 hover:text-indigo-300 self-start">&larr; Back</button>
+             <div class="bg-gray-800 p-8 rounded-xl border border-gray-700 shadow-lg w-full">
+                <h2 class="text-2xl font-semibold mb-6 text-center">Name Your New Pool</h2>
+                <form id="create-pool-form" class="flex flex-col gap-4">
+                    <input type="text" id="new-pool-name" placeholder="E.g., Goa Trip, Weekend Hangout" class="flex-grow bg-gray-700 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" required>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">Create & Go</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Join Pool View -->
+        <div id="view-join-pool" class="view w-full max-w-md">
+            <button class="back-to-welcome-btn mb-4 text-indigo-400 hover:text-indigo-300 self-start">&larr; Back</button>
+             <div class="bg-gray-800 p-8 rounded-xl border border-gray-700 shadow-lg w-full">
+                <h2 class="text-2xl font-semibold mb-6 text-center">Join a Pool</h2>
+                <form id="join-pool-form" class="flex flex-col gap-4">
+                    <input type="text" id="join-pool-id" placeholder="Paste Pool ID here" class="flex-grow bg-gray-700 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" required>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">Find & Join</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Pool Dashboard View -->
+        <div id="view-pool-dashboard" class="view w-full max-w-4xl">
+            <div class="w-full">
+                <button id="go-back-btn" class="mb-4 text-indigo-400 hover:text-indigo-300">&larr; Back to Welcome</button>
+                <div class="flex justify-between items-center mb-4">
+                    <h1 id="pool-name-header" class="text-4xl font-bold"></h1>
+                    <button id="copy-pool-id-btn" class="bg-gray-700 hover:bg-gray-600 text-sm py-1 px-3 rounded-lg">Copy Pool ID</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-green-800/50 border border-green-700 p-4 rounded-lg"><h3 class="text-sm font-medium text-green-300">TOTAL POOL</h3><p id="total-pool" class="text-3xl font-bold">₹0</p></div>
+                    <div class="bg-red-800/50 border border-red-700 p-4 rounded-lg"><h3 class="text-sm font-medium text-red-300">TOTAL SPENT</h3><p id="total-spent" class="text-3xl font-bold">₹0</p></div>
+                    <div class="bg-blue-800/50 border border-blue-700 p-4 rounded-lg"><h3 class="text-sm font-medium text-blue-300">REMAINING</h3><p id="remaining-balance" class="text-3xl font-bold">₹0</p></div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <div id="contribution-section" class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6"><h2 class="text-xl font-semibold mb-4">Pool In Your Share</h2><form id="add-contribution-form" class="flex flex-col sm:flex-row gap-4"><input type="number" id="contribution-amount" placeholder="Amount (₹)" min="1" class="flex-grow bg-gray-700 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required><button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg transition duration-300">Add to Pool</button></form></div>
+                        <div id="expense-section" class="bg-gray-800 p-6 rounded-xl border border-gray-700"><h2 class="text-xl font-semibold mb-4">Add an Expense</h2><form id="add-expense-form" class="space-y-4"><input type="text" id="expense-description" placeholder="What was this for?" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:outline-none transition" required><input type="number" id="expense-amount" placeholder="Amount (₹)" min="1" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:outline-none transition" required><button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-5 rounded-lg transition duration-300">Deduct from Pool</button></form></div>
+                    </div>
+                    <div>
+                        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-6"><h2 class="text-xl font-semibold mb-4">Members & Contributions</h2><div id="members-list" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div></div>
+                        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700"><h2 class="text-xl font-semibold mb-4">Expense History</h2><div id="expenses-list" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div></div>
+                    </div>
+                </div>
+                
+                <div id="actions-section" class="mt-8 text-center"><button id="complete-trip-btn" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">Complete Pool & Settle Up</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-gray-800 rounded-xl shadow-2xl p-8 max-w-sm w-full border border-gray-700"><h2 id="modal-title" class="text-2xl font-bold mb-4"></h2><p id="modal-body" class="text-gray-300 mb-6"></p><button id="modal-close-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition">OK, Got it</button></div>
+    </div>
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs, addDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- GLOBAL STATE & CONFIG ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pool-n-pay-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+          // Fallback config for local development if needed, though anonymous auth will be used.
+          apiKey: "AIzaSyCTXCvxGmsEhJjjNEeGGbAvk0xiZfGgpXU",
+          authDomain: "pool-n-pay.firebaseapp.com",
+          projectId: "pool-n-pay",
+          storageBucket: "pool-n-pay.appspot.com",
+          messagingSenderId: "305006670167",
+          appId: "1:305006670167:web:28b84b097df36c58530e12"
+        };
+
+        let app, auth, db;
+        let currentUser = null;
+        let activePoolId = null;
+        let activePoolUnsubscribe = null;
+
+        // --- UI ELEMENTS ---
+        const views = document.querySelectorAll('.view');
+
+        // --- INITIALIZATION ---
+        async function main() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            } catch (e) {
+                console.error("Firebase initialization failed:", e);
+                showModal("Error", "Could not connect to the database. Please refresh the page.");
+                return;
+            }
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = { 
+                        uid: user.uid, 
+                        displayName: user.displayName || (user.isAnonymous ? `Anonymous-${user.uid.substring(0,4)}` : 'User'), 
+                        photoURL: user.photoURL,
+                        isAnonymous: user.isAnonymous
+                    };
+                    document.getElementById('user-name').textContent = currentUser.displayName;
+                    document.getElementById('user-photo').src = currentUser.photoURL || `https://placehold.co/80x80/64748b/ffffff?text=${currentUser.displayName.charAt(0)}`;
+                    switchView('view-welcome');
+                    loadPreviousPools(currentUser.uid);
+                } else {
+                    currentUser = null;
+                    attemptSignIn();
+                }
+            });
+
+            attemptSignIn();
+        }
+
+        async function attemptSignIn() {
+             try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Automatic sign-in failed:", error);
+                if (!auth.currentUser) {
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (anonError) {
+                        console.error("Anonymous sign-in failed:", anonError);
+                        showModal("Authentication Error", "Could not sign you in.");
+                    }
+                }
+            }
+        }
+
+
+        // --- VIEW MANAGEMENT ---
+        function switchView(viewId) {
+            views.forEach(view => {
+                view.classList.remove('active');
+            });
+            const activeView = document.getElementById(viewId);
+            if (activeView) {
+                activeView.classList.add('active');
+            }
+        }
+
+        // --- AUTH ACTIONS ---
+        const signOutUser = async () => {
+            if (currentUser && currentUser.isAnonymous) {
+                 showModal("Info", "Anonymous users cannot sign out.");
+                 return;
+            }
+            try {
+                await signOut(auth);
+                switchView('view-loading');
+            } catch (error) {
+                console.error("Sign-Out failed:", error);
+                showModal("Error", "Could not sign out properly.");
+            }
+        };
+
+        // --- DATA FETCHING & RENDERING ---
+        async function loadPreviousPools(userId) {
+            const listEl = document.getElementById('previous-pools-list');
+            listEl.innerHTML = '<p class="text-gray-500">Loading your pools...</p>';
+
+            try {
+                const poolsCollection = collection(db, `artifacts/${appId}/public/data/pools`);
+                const q = query(poolsCollection, where('memberIds', 'array-contains', userId));
+                const querySnapshot = await getDocs(q);
+
+                listEl.innerHTML = '';
+                if (querySnapshot.empty) {
+                    listEl.innerHTML = '<p class="text-gray-500 text-center">You haven\'t joined any pools yet.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const pool = doc.data();
+                    const poolEl = document.createElement('div');
+                    poolEl.className = `p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition flex justify-between items-center border ${pool.status === 'completed' ? 'border-yellow-500/50' : 'border-gray-600'}`;
+                    poolEl.dataset.id = doc.id;
+                    poolEl.innerHTML = `
+                        <div>
+                            <span class="font-semibold">${pool.name}</span>
+                            ${pool.status === 'completed' ? '<span class="text-xs text-yellow-400 ml-2">Completed</span>' : ''}
+                        </div>
+                        <span class="text-indigo-400 text-sm">View &rarr;</span>
+                    `;
+                    poolEl.addEventListener('click', () => viewPoolDashboard(doc.id));
+                    listEl.appendChild(poolEl);
+                });
+
+            } catch (error) {
+                console.error("Error loading previous pools:", error);
+                listEl.innerHTML = '<p class="text-red-500">Could not load your pools.</p>';
+            }
+        }
+
+        function renderPoolDetails(poolData) {
+            if (!poolData) {
+                showModal("Error", "Could not find a pool with that ID.");
+                goBackToWelcome();
+                return;
+            }
+
+            const totalPool = poolData.members.reduce((sum, member) => sum + member.amountContributed, 0);
+            const totalSpent = poolData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            const remainingBalance = totalPool - totalSpent;
+
+            document.getElementById('pool-name-header').textContent = poolData.name;
+            document.getElementById('total-pool').textContent = `₹${totalPool.toLocaleString()}`;
+            document.getElementById('total-spent').textContent = `₹${totalSpent.toLocaleString()}`;
+            document.getElementById('remaining-balance').textContent = `₹${remainingBalance.toLocaleString()}`;
+
+            const membersList = document.getElementById('members-list');
+            membersList.innerHTML = !poolData.members.length ? '<p class="text-gray-500">No contributions yet.</p>' : '';
+            poolData.members.forEach(member => {
+                const memberEl = document.createElement('div');
+                memberEl.className = 'flex justify-between items-center bg-gray-700 p-2 rounded-md';
+                memberEl.innerHTML = `<span class="text-sm truncate" title="${member.displayName} (${member.userId})">👤 ${member.displayName}</span><span class="font-semibold text-green-400">₹${member.amountContributed.toLocaleString()}</span>`;
+                membersList.appendChild(memberEl);
+            });
+
+            const expensesList = document.getElementById('expenses-list');
+            expensesList.innerHTML = !poolData.expenses.length ? '<p class="text-gray-500">No expenses recorded.</p>' : '';
+            [...poolData.expenses].reverse().forEach(expense => {
+                const expenseEl = document.createElement('div');
+                expenseEl.className = 'flex justify-between items-center bg-gray-700 p-2 rounded-md';
+                expenseEl.innerHTML = `<div><p class="font-medium">${expense.description}</p><p class="text-xs text-gray-400">by ${expense.spentBy_displayName || 'A user'}</p></div><span class="font-semibold text-red-400">- ₹${expense.amount.toLocaleString()}</span>`;
+                expensesList.appendChild(expenseEl);
+            });
+            
+            const isCompleted = poolData.status === 'completed';
+            document.getElementById('contribution-section').style.display = isCompleted ? 'none' : 'block';
+            document.getElementById('expense-section').style.display = isCompleted ? 'none' : 'block';
+            document.getElementById('actions-section').style.display = isCompleted ? 'none' : 'block';
+            if (isCompleted) {
+                const settlementPerPerson = poolData.members.length > 0 ? remainingBalance / poolData.members.length : 0;
+                showModal(`${poolData.name} is Completed`, `The final remaining balance is ₹${remainingBalance.toLocaleString()}. Each of the ${poolData.members.length} members gets back ₹${settlementPerPerson.toFixed(2)}.`);
+            }
+        }
+
+        // --- EVENT HANDLERS & ACTIONS ---
+        function goBackToWelcome() {
+            if (activePoolUnsubscribe) activePoolUnsubscribe();
+            activePoolId = null;
+            switchView('view-welcome');
+            if (currentUser) {
+                loadPreviousPools(currentUser.uid);
+            }
+        }
+
+        async function viewPoolDashboard(poolId) {
+            activePoolId = poolId;
+            switchView('view-pool-dashboard');
+
+            const poolDocRef = doc(db, `artifacts/${appId}/public/data/pools`, poolId);
+            activePoolUnsubscribe = onSnapshot(poolDocRef, (doc) => {
+                if (doc.exists()) {
+                    renderPoolDetails(doc.data());
+                } else {
+                    showModal("Error", "This pool may have been deleted.");
+                    goBackToWelcome();
+                }
+            }, (error) => {
+                console.error("Error with real-time listener:", error);
+                showModal("Connection Error", "Lost connection to the pool data.");
+                goBackToWelcome();
+            });
+        }
+
+        document.getElementById('create-pool-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const poolNameInput = document.getElementById('new-pool-name');
+            const poolName = poolNameInput.value.trim();
+            if (!poolName || !currentUser) return;
+
+            try {
+                const newPool = { 
+                    name: poolName, 
+                    createdBy: currentUser.uid, 
+                    createdAt: new Date().toISOString(), 
+                    status: 'active', 
+                    members: [], 
+                    expenses: [],
+                    memberIds: [currentUser.uid] // Add creator to memberIds
+                };
+                const docRef = await addDoc(collection(db, `artifacts/${appId}/public/data/pools`), newPool);
+                poolNameInput.value = '';
+                viewPoolDashboard(docRef.id);
+            } catch (error) {
+                console.error("Error creating pool:", error);
+                showModal("Error", "Could not create the new pool.");
+            }
+        });
+
+        document.getElementById('join-pool-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const poolIdInput = document.getElementById('join-pool-id');
+            const poolId = poolIdInput.value.trim();
+            if(!poolId) return;
+
+            const poolDocRef = doc(db, `artifacts/${appId}/public/data/pools`, poolId);
+            const poolDoc = await getDoc(poolDocRef);
+
+            if (poolDoc.exists()) {
+                // Add the current user to the memberIds array if they join
+                await updateDoc(poolDocRef, {
+                    memberIds: arrayUnion(currentUser.uid)
+                });
+                poolIdInput.value = '';
+                viewPoolDashboard(poolId);
+            } else {
+                showModal("Not Found", "We couldn't find a pool with that ID. Please check and try again.");
+            }
+        });
+        
+        document.getElementById('add-contribution-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amountInput = document.getElementById('contribution-amount');
+            const amount = parseFloat(amountInput.value);
+            if (!amount || amount <= 0 || !activePoolId || !currentUser) return;
+
+            const poolDocRef = doc(db, `artifacts/${appId}/public/data/pools`, activePoolId);
+            try {
+                const poolDoc = await getDoc(poolDocRef);
+                if (!poolDoc.exists()) return;
+
+                const poolData = poolDoc.data();
+                const members = poolData.members;
+                const existingMemberIndex = members.findIndex(m => m.userId === currentUser.uid);
+
+                if (existingMemberIndex > -1) {
+                    members[existingMemberIndex].amountContributed += amount;
+                } else {
+                    members.push({ userId: currentUser.uid, displayName: currentUser.displayName, amountContributed: amount });
+                }
+
+                // Update members list and ensure user is in memberIds array
+                await updateDoc(poolDocRef, {
+                    members: members,
+                    memberIds: arrayUnion(currentUser.uid)
+                });
+
+                amountInput.value = '';
+            } catch (error) {
+                console.error("Error adding contribution:", error);
+                showModal("Error", "Failed to add your contribution.");
+            }
+        });
+
+        document.getElementById('add-expense-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const descriptionInput = document.getElementById('expense-description');
+            const amountInput = document.getElementById('expense-amount');
+            const description = descriptionInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+            if (!description || !amount || amount <= 0 || !activePoolId || !currentUser) return;
+
+            const poolDocRef = doc(db, `artifacts/${appId}/public/data/pools`, activePoolId);
+            try {
+                const poolDoc = await getDoc(poolDocRef);
+                if (!poolDoc.exists()) return;
+                
+                const poolData = poolDoc.data();
+                const remaining = poolData.members.reduce((s, m) => s + m.amountContributed, 0) - poolData.expenses.reduce((s, ex) => s + ex.amount, 0);
+
+                if (amount > remaining) {
+                    const shortfall = amount - remaining;
+                    const membersCount = poolData.members.length || 1;
+                    const perPersonShortfall = shortfall / membersCount;
+                    showModal("Insufficient Funds!", `This expense of ₹${amount} exceeds the remaining pool of ₹${remaining}. The pool is short by ₹${shortfall.toFixed(2)}. Each of the ${membersCount} members should add ~₹${perPersonShortfall.toFixed(2)} to cover this.`);
+                }
+                
+                const newExpense = { description, amount, spentBy: currentUser.uid, spentBy_displayName: currentUser.displayName, timestamp: new Date().toISOString() };
+                await updateDoc(poolDocRef, { expenses: arrayUnion(newExpense) });
+                descriptionInput.value = '';
+                amountInput.value = '';
+            } catch (error) {
+                console.error("Error adding expense:", error);
+                showModal("Error", "Failed to add the expense.");
+            }
+        });
+        
+        document.getElementById('complete-trip-btn').addEventListener('click', async () => {
+             if (!activePoolId) return;
+             try { await updateDoc(doc(db, `artifacts/${appId}/public/data/pools`, activePoolId), { status: 'completed' }); } 
+             catch (error) { console.error("Error completing pool:", error); showModal("Error", "Could not mark the pool as complete."); }
+        });
+
+        // --- UI UTILITIES ---
+        function showModal(title, body) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').textContent = body;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('signout-btn').addEventListener('click', signOutUser);
+        
+        document.getElementById('show-create-pool-view-btn').addEventListener('click', () => switchView('view-create-pool'));
+        document.getElementById('show-join-pool-view-btn').addEventListener('click', () => switchView('view-join-pool'));
+        
+        document.querySelectorAll('.back-to-welcome-btn').forEach(btn => btn.addEventListener('click', goBackToWelcome));
+        document.getElementById('go-back-btn').addEventListener('click', goBackToWelcome);
+
+        document.getElementById('modal-close-btn').addEventListener('click', () => {
+            document.getElementById('modal').style.display = 'none';
+        });
+
+        document.getElementById('copy-pool-id-btn').addEventListener('click', () => {
+            if (!activePoolId) return;
+            const textArea = document.createElement('textarea');
+            textArea.value = activePoolId;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showModal("Copied!", "The Pool ID has been copied to your clipboard. Share it with your friends!");
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showModal("Error", "Could not copy ID. Please copy it manually.");
+            }
+            document.body.removeChild(textArea);
+        });
+
+        // --- START THE APP ---
+        main();
+    </script>
+</body>
+</html>
