@@ -1,7 +1,7 @@
 
 Pool-n-Pay: The Simple Way to Manage Group Expenses
 
-LINK: https://sage-travesseiro-328dff.netlify.app/
+LINK: https://pool-n-pay.netlify.app/
 
 
 *A hassle-free expense manager for trips and group outings. Pool your money first, then track your spending. No more chasing friends for money!*
