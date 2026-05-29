@@ -276,6 +276,8 @@ export const dbService = {
     return db.groups;
   },
 
+
+
   updateGroupTarget: async (groupId: string, newTarget: number) => {
     const db = getLocalDb();
     const group = db.groups.find(g => g.id === groupId);
