@@ -6,7 +6,7 @@ const getSupabaseCredentials = () => {
   const localKey = localStorage.getItem("POOL_N_PAY_SUPABASE_KEY");
   const url = localUrl || import.meta.env.VITE_SUPABASE_URL || "";
   const key = localKey || import.meta.env.VITE_SUPABASE_ANON_KEY || "";
-  return { url, key, isConfigured: !!(url && key) };
+  return { url, key, isConfigured: false };
 };
 
 const { url, key, isConfigured } = getSupabaseCredentials();
