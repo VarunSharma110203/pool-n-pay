@@ -13,7 +13,6 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
-  const isConfigured = dbService.isConfigured();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +35,9 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       }
 
       setSuccess(true);
-      if (!isConfigured) {
-        setTimeout(() => {
-          onAuthSuccess();
-        }, 800);
-      }
+      setTimeout(() => {
+        onAuthSuccess();
+      }, 800);
     } catch (err: any) {
       setError(err?.message || "Something went wrong. Please try again.");
     } finally {
@@ -258,7 +255,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 margin: 0,
               }}
             >
-              {isConfigured ? "Check your email! ✉️" : "Welcome aboard! 🌴"}
+              Welcome aboard! 🌴
             </p>
             <p
               style={{
@@ -267,7 +264,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 margin: 0,
               }}
             >
-              {isConfigured ? "We sent a magic sign-in link to your inbox." : "Loading your dashboard..."}
+              Authenticating...
             </p>
           </div>
         ) : (
@@ -471,7 +468,7 @@ export const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             marginBottom: 0,
           }}
         >
-          {!isConfigured ? "Sandbox mode — no password required" : ""}
+          
         </p>
       </div>
     </div>
