@@ -1,5 +1,5 @@
 import React from "react";
-import { timeAgo } from "../lib/supabaseClient";
+import { timeAgo } from "../lib/firebaseClient";
 
 interface ActivityItemProps {
   avatar: string;

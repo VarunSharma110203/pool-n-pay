@@ -9,7 +9,7 @@ import {
   CheckCircle,
   X,
 } from "lucide-react";
-import { dbService, getInviteCode } from "../lib/supabaseClient";
+import { dbService, getInviteCode } from "../lib/firebaseClient";
 import { GroupDetail } from "../components/GroupDetail";
 
 interface Friend {

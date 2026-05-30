@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Edit3, Save, X, LogOut, Bell, Volume2, AlertTriangle, Copy, CheckCircle, Shield, Smartphone, Info } from "lucide-react";
-import { dbService, getInviteCode } from "../lib/supabaseClient";
+import { dbService, getInviteCode } from "../lib/firebaseClient";
 
 interface Profile {
   name: string;

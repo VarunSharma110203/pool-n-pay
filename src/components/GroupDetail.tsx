@@ -16,7 +16,7 @@ import {
   Check,
   Pencil,
 } from "lucide-react";
-import { dbService, timeAgo } from "../lib/supabaseClient";
+import { dbService, timeAgo } from "../lib/firebaseClient";
 import confetti from "canvas-confetti";
 
 interface GroupDetailProps {

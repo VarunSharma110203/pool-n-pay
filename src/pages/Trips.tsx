@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { PlusCircle, X, ChevronLeft, ChevronRight, Check } from "lucide-react";
-import { dbService } from "../lib/supabaseClient";
+import { dbService } from "../lib/firebaseClient";
 import GroupCard from "../components/GroupCard";
 import { GroupDetail } from "../components/GroupDetail";
 import confetti from "canvas-confetti";

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Home, Map, Users, Compass, User } from "lucide-react";
-import { Auth } from "./components/Auth";
+import Auth from "./components/Auth";
 import { SplashScreen } from "./components/SplashScreen";
 import { Onboarding } from "./components/Onboarding";
 import Index from "./pages/Index";
@@ -9,7 +9,7 @@ import Friends from "./pages/Friends";
 import Profile from "./pages/Profile";
 import { TravelSearch } from "./components/TravelSearch";
 import { ItineraryGenerator } from "./components/ItineraryGenerator";
-import { dbService, isFirstVisit, markOnboarded } from "./lib/supabaseClient";
+import { dbService, isFirstVisit, markOnboarded } from "./lib/firebaseClient";
 
 type TabName = "home" | "trips" | "friends" | "explore" | "profile";
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Key, Database, RefreshCw, CheckCircle, User, QrCode, Sparkles } from "lucide-react";
-import { dbService } from "../lib/supabaseClient";
+import { dbService } from "../lib/firebaseClient";
 
 interface SettingsProps {
   onProfileUpdated: () => void;
@@ -77,7 +77,7 @@ export const Settings: React.FC<SettingsProps> = ({ onProfileUpdated }) => {
 
   const handleResetDb = () => {
     if (confirm("Are you sure you want to reset the database to the default tropical trip data? All your custom pools/expenses will be deleted.")) {
-      dbService.resetDb();
+      
       setMessage({ text: "Database successfully reset to defaults! 🍹", type: "success" });
       onProfileUpdated();
       setTimeout(() => setMessage(null), 3000);

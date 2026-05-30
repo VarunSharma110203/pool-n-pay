@@ -146,16 +146,17 @@ export default function Index({ profile, onNavigate }: Props) {
       const friendName =
         debtorName === profile.name ? creditorName : debtorName;
       const directGroup = await dbService.getOrCreateDirectGroup(friendName);
-      const debtorAvatar =
-        debtorName === profile.name ? profile.avatar : "🧑‍🦱";
-      await dbService.addExpense(
-        directGroup.id,
-        `Settle: ${debtorName} paid ${creditorName}`,
-        amount,
-        debtorName,
-        debtorAvatar,
-        [creditorName]
-      );
+      if (directGroup) {
+        const debtorAvatar = debtorName === profile.name ? profile.avatar : "🧑‍🦱";
+        await dbService.addExpense(
+          directGroup.id,
+          `Settle: ${debtorName} paid ${creditorName}`,
+          amount,
+          debtorName,
+          debtorAvatar,
+          [creditorName]
+        );
+      }
       confetti({
         particleCount: 140,
         spread: 70,
