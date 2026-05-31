@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Home, Map, Users, Compass, User } from "lucide-react";
 import Auth from "./components/Auth";
+import { LandingPage } from "./components/LandingPage";
 import { SplashScreen } from "./components/SplashScreen";
 import { Onboarding } from "./components/Onboarding";
 import Index from "./pages/Index";
@@ -27,6 +28,7 @@ export default function App() {
   const [activeTab, setActiveTab]     = useState<TabName>("home");
   const [loading, setLoading]         = useState(true);
   const [showSplash, setShowSplash]   = useState(false);
+  const [showAuthScreen, setShowAuthScreen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [splashDone, setSplashDone]   = useState(false);
   const [exploreTab, setExploreTab]   = useState<"travel" | "itinerary">("travel");
@@ -210,7 +212,10 @@ export default function App() {
   }
 
   if (!isLoggedIn) {
-    return <Auth onAuthSuccess={checkAuth} />;
+    if (!showAuthScreen) {
+      return <LandingPage onLoginClick={() => setShowAuthScreen(true)} />;
+    }
+    return <Auth onAuthSuccess={checkAuth} onBack={() => setShowAuthScreen(false)} />;
   }
 
   if (showSplash && !splashDone) {

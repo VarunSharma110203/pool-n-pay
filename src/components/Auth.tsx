@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { Mail, Lock, User, ArrowRight, ShieldCheck, CheckCircle, Smartphone } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, ShieldCheck, CheckCircle, Smartphone, ArrowLeft } from "lucide-react";
 import { dbService } from "../lib/firebaseClient";
 
 interface AuthProps {
   onAuthSuccess: () => void;
+  onBack?: () => void;
 }
 
-const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
+export default function Auth({ onAuthSuccess, onBack }: AuthProps) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,6 +55,16 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       {/* Background gradients for sleek fintech look */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[100px] pointer-events-none" />
+
+      {onBack && (
+        <button 
+          onClick={onBack}
+          className="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors z-20 p-2 bg-slate-800/50 rounded-full"
+          title="Back"
+        >
+          <ArrowLeft size={24} />
+        </button>
+      )}
 
       <div className="glass-dark w-full max-w-[420px] rounded-[24px] p-8 shadow-2xl relative z-10 animate-slide-up">
         
@@ -172,6 +183,4 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       </div>
     </div>
   );
-};
-
-export default Auth;
+}
