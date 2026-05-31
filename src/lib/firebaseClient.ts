@@ -230,6 +230,23 @@ export const dbService = {
     window.dispatchEvent(new Event("pool_n_pay_db_change"));
   },
 
+  updateGroupAdmin: async (groupId: string, newAdminName: string) => {
+    await updateDoc(doc(db, "groups", groupId), { admin: newAdminName });
+    const profile = await dbService.getProfile();
+    if (profile) {
+      await addDoc(collection(db, "activities"), {
+        group_id: groupId,
+        avatar: "👑",
+        name: profile.name,
+        action: `assigned ${newAdminName} as the Pool Admin`,
+        amount: "",
+        type: "pool",
+        created_at: new Date().toISOString()
+      });
+    }
+    window.dispatchEvent(new Event("pool_n_pay_db_change"));
+  },
+
   createGroup: async (name: string, mode: "split" | "pool", members: string[], targetAmount?: number, emoji: string = "🌴") => {
     const profile = await dbService.getProfile();
     if (!profile) return null;
@@ -244,6 +261,7 @@ export const dbService = {
       target_amount: targetAmount || null,
       emoji,
       invite_code: inviteCode,
+      admin: profile.name,
       created_at: new Date().toISOString()
     });
     
@@ -258,7 +276,7 @@ export const dbService = {
     });
     
     window.dispatchEvent(new Event("pool_n_pay_db_change"));
-    return { id: ref.id, name, mode, members: allMembers, target_amount: targetAmount, emoji, invite_code: inviteCode, created_at: new Date().toISOString() };
+    return { id: ref.id, name, mode, members: allMembers, target_amount: targetAmount, emoji, invite_code: inviteCode, admin: profile.name, created_at: new Date().toISOString() };
   },
 
   processReferralCode: async (referrerCode: string) => {

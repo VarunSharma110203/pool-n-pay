@@ -159,7 +159,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
       const amount = parseFloat(poolAmt);
       if (amount <= 0) return;
 
-      const poolOwner = group.members[0];
+      const poolOwner = poolAdmin;
       if (poolOwner === profile.name || !poolOwner) {
         await dbService.addContribution(groupId, profile.name, amount);
         setPoolAmt("");
@@ -228,6 +228,8 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
   }
 
   const isSplit = group.mode === "split";
+  const poolAdmin = group.admin || (group.members && group.members[0]) || "";
+  const isCurrentAdmin = poolAdmin === profile.name;
 
   const poolCollected = !isSplit
     ? contributions.reduce((sum, c) => sum + c.amount, 0)
@@ -368,10 +370,13 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
             <p className="text-xs text-white/70 mt-1">
               Created{" "}
               {new Date(group.created_at).toLocaleDateString(undefined, {
+                year: "numeric",
                 month: "short",
                 day: "numeric",
-                year: "numeric",
               })}
+              {!isSplit && poolAdmin && (
+                <> · Pool Admin: {poolAdmin === profile.name ? "You" : poolAdmin} 👑</>
+              )}
             </p>
           </div>
         </div>
@@ -429,32 +434,38 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                   <p className="text-[10px] uppercase font-bold text-white/60 tracking-wider">
                     Target
                   </p>
-                  {isEditingTarget ? (
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <div className="relative">
-                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white/70 font-mono">₹</span>
-                        <input 
-                          type="number" 
-                          value={newTarget}
-                          onChange={(e) => setNewTarget(e.target.value)}
-                          className="bg-white/10 border border-white/20 rounded-lg pl-6 pr-2 py-1 w-24 text-white font-mono text-sm focus:outline-none focus:border-white/40"
-                          autoFocus
-                          onKeyDown={(e) => e.key === 'Enter' && handleSaveTarget()}
-                        />
+                  {isCurrentAdmin ? (
+                    isEditingTarget ? (
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <div className="relative">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white/70 font-mono">₹</span>
+                          <input 
+                            type="number" 
+                            value={newTarget}
+                            onChange={(e) => setNewTarget(e.target.value)}
+                            className="bg-white/10 border border-white/20 rounded-lg pl-6 pr-2 py-1 w-24 text-white font-mono text-sm focus:outline-none focus:border-white/40"
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveTarget()}
+                          />
+                        </div>
+                        <button onClick={handleSaveTarget} className="bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 p-1 rounded-md transition-colors">
+                          <Check className="w-4 h-4" />
+                        </button>
                       </div>
-                      <button onClick={handleSaveTarget} className="bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 p-1 rounded-md transition-colors">
-                        <Check className="w-4 h-4" />
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-0.5 group/target cursor-pointer" onClick={() => { setNewTarget(group.target_amount.toString()); setIsEditingTarget(true); }}>
+                        <p className="text-lg font-mono font-bold text-teal-200">
+                          ₹{group.target_amount.toLocaleString()}
+                        </p>
+                        <button className="opacity-0 group-hover/target:opacity-100 transition-opacity text-white/40 hover:text-white">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )
                   ) : (
-                    <div className="flex items-center gap-2 mt-0.5 group/target cursor-pointer" onClick={() => { setNewTarget(group.target_amount.toString()); setIsEditingTarget(true); }}>
-                      <p className="text-lg font-mono font-bold text-teal-200">
-                        ₹{group.target_amount.toLocaleString()}
-                      </p>
-                      <button className="opacity-0 group-hover/target:opacity-100 transition-opacity text-white/40 hover:text-white">
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    <p className="text-lg font-mono font-bold text-teal-200 mt-0.5">
+                      ₹{group.target_amount.toLocaleString()}
+                    </p>
                   )}
                 </div>
               )}
@@ -806,6 +817,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                   const pct = Math.min(100, (paid / requiredPerMember) * 100);
                   const isMe = member === profile.name;
                   const done = remaining === 0;
+                  const isAdmin = member === poolAdmin;
                   return (
                     <div key={member} className={`p-3.5 rounded-2xl border ${ isMe ? 'border-teal-200 bg-teal-50/60' : 'border-gray-100 bg-gray-50/60' }`}>
                       <div className="flex items-center justify-between mb-2.5">
@@ -814,7 +826,14 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                             {member.slice(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-slate-900">{isMe ? `You (${profile.name})` : member}</p>
+                            <p className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                              {isMe ? `You (${profile.name})` : member}
+                              {isAdmin && (
+                                <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                                  Admin 👑
+                                </span>
+                              )}
+                            </p>
                             <p className="text-[10px] text-slate-400 font-mono">
                               ₹{paid.toLocaleString()} paid · ₹{remaining.toLocaleString()} left
                             </p>
@@ -908,12 +927,13 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
             <div className="flex flex-col gap-2 text-xs font-semibold text-slate-700">
               {group.members.map((m: string) => {
                 const isMe = m === profile.name;
+                const isAdmin = m === poolAdmin;
                 return (
                   <div
                     key={m}
                     className="flex justify-between items-center bg-gray-50 p-2.5 rounded-xl border border-gray-100"
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
                       <div
                         className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[10px] ${
                           isMe
@@ -923,16 +943,31 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                       >
                         {isMe ? profile.avatar : m.slice(0, 2).toUpperCase()}
                       </div>
-                      <span>{isMe ? `You (${profile.name})` : m}</span>
+                      <span className="truncate">{isMe ? `You (${profile.name})` : m}</span>
+                      {isAdmin && (
+                        <span className="bg-amber-100 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded-md flex-shrink-0 uppercase">
+                          Admin 👑
+                        </span>
+                      )}
                     </div>
-                    {isMe ? (
-                      <span className="text-[9px] font-bold text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded uppercase">
-                        Owner
-                      </span>
-                    ) : (
-                      <span className="text-[9px] font-bold text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded uppercase">
-                        Member
-                      </span>
+
+                    {/* Admin reassign capability in pool mode */}
+                    {!isSplit && isCurrentAdmin && !isMe && (
+                      <button
+                        onClick={async () => {
+                          if (confirm(`Are you sure you want to make ${m} the Pool Admin? This will direct all new contributions to their UPI ID.`)) {
+                            try {
+                              await (dbService as any).updateGroupAdmin(groupId, m);
+                              alert(`${m} is now the Pool Admin!`);
+                            } catch (e) {
+                              alert("Failed to change admin.");
+                            }
+                          }
+                        }}
+                        className="text-[9px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Make Admin
+                      </button>
                     )}
                   </div>
                 );
