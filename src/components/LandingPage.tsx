@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight, ShieldCheck, Zap, Users } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Users, Sparkles, CreditCard } from "lucide-react";
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -7,26 +7,39 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-200">
-      {/* ─── HEADER ─── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+    <div className="min-h-screen font-sans overflow-hidden" style={{ background: "linear-gradient(135deg,#f5f3ff 0%,#ede9fe 30%,#dbeafe 65%,#e0f2fe 100%)" }}>
+
+      {/* ── Ambient background blobs ── */}
+      <div className="blob w-96 h-96 bg-violet-300 top-[-6rem] left-[-6rem]" />
+      <div className="blob w-80 h-80 bg-sky-200 top-20 right-0" />
+      <div className="blob w-72 h-72 bg-pink-200 bottom-40 left-1/3" />
+      <div className="blob w-64 h-64 bg-emerald-200 bottom-0 right-[-4rem]" />
+
+      {/* ── HEADER ── */}
+      <header className="fixed top-0 left-0 right-0 z-50" style={{ background: "rgba(245,243,255,0.75)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(167,139,250,0.15)" }}>
+        <div className="max-w-6xl mx-auto px-6 h-18 flex items-center justify-between" style={{ height: "72px" }}>
+
+          {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg">
-              <span className="text-xl">🌴</span>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-md" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}>
+              <span style={{ fontSize: "18px" }}>🌴</span>
             </div>
-            <span className="font-black text-xl text-slate-900 tracking-tight">Pool-n-Pay</span>
+            <span className="font-black text-lg tracking-tight" style={{ color: "#1e1b4b" }}>Pool-n-Pay</span>
           </div>
-          <div className="flex items-center gap-4">
+
+          {/* Nav */}
+          <div className="flex items-center gap-3">
             <button
               onClick={onLoginClick}
-              className="hidden md:block text-slate-600 hover:text-slate-900 font-semibold px-4 py-2 transition-colors"
+              className="hidden md:block font-semibold text-sm px-4 py-2 transition-colors rounded-lg hover:bg-violet-50"
+              style={{ color: "#6d28d9" }}
             >
               Log in
             </button>
             <button
               onClick={onLoginClick}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-full font-bold shadow-md shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
+              className="text-white font-bold text-sm px-5 py-2.5 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95"
+              style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)", boxShadow: "0 4px 16px rgba(124,58,237,0.35)" }}
             >
               Get Started
             </button>
@@ -34,96 +47,174 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
         </div>
       </header>
 
-      {/* ─── HERO SECTION ─── */}
-      <section className="pt-40 pb-20 px-6 overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center">
-          
-          <div className="space-y-8 transition-all duration-1000 opacity-100 translate-y-0">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 font-bold text-sm mx-auto">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              The smartest way to travel
+      {/* ── HERO ── */}
+      <section className="relative pt-44 pb-28 px-6 text-center">
+        <div className="max-w-3xl mx-auto space-y-7 animate-slide-up">
+
+          {/* Tag pill */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold" style={{ background: "rgba(167,139,250,0.18)", color: "#6d28d9", border: "1px solid rgba(167,139,250,0.3)" }}>
+            <Sparkles size={14} />
+            Built for Goa trips, house parties & everything between
+          </div>
+
+          {/* Headline */}
+          <h1 className="font-black tracking-tight leading-[1.08]" style={{ fontSize: "clamp(2.6rem, 7vw, 4.5rem)", color: "#1e1b4b" }}>
+            Split bills.<br />
+            <span style={{ background: "linear-gradient(90deg,#7c3aed,#60a5fa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              Pool money.
+            </span>{" "}
+            <span style={{ color: "#64748b" }}>Travel.</span>
+          </h1>
+
+          {/* Sub-copy */}
+          <p className="text-lg leading-relaxed mx-auto max-w-xl" style={{ color: "#64748b", fontWeight: 450 }}>
+            Stop fronting ₹30,000 for everyone. With Pool-n-Pay, your whole group chips in upfront — and you get a transparent ledger of every rupee spent.
+          </p>
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-3">
+            <button
+              onClick={onLoginClick}
+              className="flex items-center justify-center gap-2 font-bold text-base text-white px-8 py-4 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95"
+              style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)", boxShadow: "0 8px 24px rgba(124,58,237,0.35)" }}
+            >
+              Start for free
+              <ArrowRight size={18} />
+            </button>
+            <button
+              onClick={onLoginClick}
+              className="flex items-center justify-center gap-2 font-semibold text-base px-8 py-4 rounded-2xl transition-all active:scale-95 hover:shadow-md"
+              style={{ background: "rgba(255,255,255,0.7)", color: "#1e1b4b", border: "1px solid rgba(167,139,250,0.3)", backdropFilter: "blur(12px)" }}
+            >
+              Log in
+            </button>
+          </div>
+        </div>
+
+        {/* Floating stat cards */}
+        <div className="mt-20 flex flex-col sm:flex-row justify-center gap-5 px-4">
+          {[
+            { emoji: "💸", label: "Pool collected", value: "₹1,20,000", color: "#7c3aed", bg: "rgba(237,233,254,0.85)" },
+            { emoji: "🧾", label: "Expenses logged", value: "48 entries", color: "#0284c7", bg: "rgba(224,242,254,0.85)" },
+            { emoji: "✅", label: "Settled via UPI", value: "₹94,500", color: "#059669", bg: "rgba(209,250,229,0.85)" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="flex items-center gap-4 px-6 py-4 rounded-2xl animate-float"
+              style={{ background: s.bg, border: "1px solid rgba(255,255,255,0.8)", backdropFilter: "blur(16px)", boxShadow: "0 4px 20px rgba(0,0,0,0.06)", minWidth: "200px" }}
+            >
+              <span style={{ fontSize: "28px" }}>{s.emoji}</span>
+              <div className="text-left">
+                <p className="text-xs font-medium" style={{ color: "#94a3b8" }}>{s.label}</p>
+                <p className="font-black text-base" style={{ color: s.color }}>{s.value}</p>
+              </div>
             </div>
-            
-            <h1 className="text-5xl lg:text-7xl font-black text-slate-900 leading-[1.1] tracking-tight">
-              Split like <span className="text-slate-400">Splitwise</span>.<br />
-              Pool like <span className="text-emerald-500">nobody else</span>.
-            </h1>
-            
-            <p className="text-xl text-slate-600 font-medium max-w-2xl mx-auto leading-relaxed">
-              Stop fronting money for your friends. Pool funds upfront for trips, track every expense with an audit ledger, and settle instantly with UPI.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-              <button
-                onClick={onLoginClick}
-                className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl shadow-slate-900/20 transition-all hover:scale-105 active:scale-95"
-              >
-                Start Pooling
-                <ArrowRight size={20} />
-              </button>
-              <button
-                onClick={onLoginClick}
-                className="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-900 border-2 border-slate-200 px-8 py-4 rounded-full font-bold text-lg transition-all active:scale-95"
-              >
-                Log in
-              </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS BAND ── */}
+      <section className="py-6 px-6" style={{ background: "rgba(255,255,255,0.4)", borderTop: "1px solid rgba(167,139,250,0.12)", borderBottom: "1px solid rgba(167,139,250,0.12)" }}>
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-around gap-4 text-center">
+          {["Create a Pool Group", "Everyone contributes via UPI", "Admin logs expenses", "Settle remainders — done"].map((step, i) => (
+            <div key={step} className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}>{i + 1}</div>
+              <p className="text-sm font-semibold" style={{ color: "#475569" }}>{step}</p>
+              {i < 3 && <span className="hidden sm:block text-violet-300 text-lg">→</span>}
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <section className="py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 space-y-3">
+            <h2 className="font-black text-4xl tracking-tight" style={{ color: "#1e1b4b" }}>Why Pool-n-Pay?</h2>
+            <p className="text-lg font-medium" style={{ color: "#94a3b8" }}>The only app with a real group money pool — not just a bill splitter.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: <Users size={26} />,
+                title: "Upfront Money Pools",
+                desc: "Everyone chips into a central pool before the trip. The Pool Admin holds the funds — no one person carries the financial burden alone.",
+                iconBg: "#ede9fe", iconColor: "#7c3aed", cardBg: "rgba(237,233,254,0.45)"
+              },
+              {
+                icon: <ShieldCheck size={26} />,
+                title: "Transparent Ledger",
+                desc: "Every contribution, every expense logged in real-time. The entire group sees exactly what was collected, spent, and what's left over.",
+                iconBg: "#dbeafe", iconColor: "#2563eb", cardBg: "rgba(219,234,254,0.45)"
+              },
+              {
+                icon: <Zap size={26} />,
+                title: "Instant UPI Settling",
+                desc: "Trip over? Settle refunds and balances with one click, routed directly to UPI IDs. Zero copy-pasting bank details.",
+                iconBg: "#d1fae5", iconColor: "#059669", cardBg: "rgba(209,250,229,0.45)"
+              },
+              {
+                icon: <CreditCard size={26} />,
+                title: "Pool Admin Control",
+                desc: "The group can assign any member as the Pool Admin. Admins approve expenses and manage the target amount — not just whoever made the group.",
+                iconBg: "#ffe4e6", iconColor: "#e11d48", cardBg: "rgba(255,228,230,0.45)"
+              },
+              {
+                icon: <Sparkles size={26} />,
+                title: "Split Mode Too",
+                desc: "Not pooling? Use classic split mode to track shared dinners, rent, or any expense and get exact individual balances.",
+                iconBg: "#fef3c7", iconColor: "#d97706", cardBg: "rgba(254,243,199,0.45)"
+              },
+              {
+                icon: <ArrowRight size={26} />,
+                title: "Invite by Code",
+                desc: "Each user gets a unique invite code. Share it over WhatsApp or SMS. Friends join in seconds — no account needed to receive money.",
+                iconBg: "#f0fdf4", iconColor: "#15803d", cardBg: "rgba(240,253,244,0.45)"
+              },
+            ].map((f) => (
+              <div
+                key={f.title}
+                className="p-7 rounded-3xl transition-all duration-300 cursor-default card-hover"
+                style={{ background: f.cardBg, border: "1px solid rgba(255,255,255,0.75)", backdropFilter: "blur(16px)" }}
+              >
+                <div className="w-13 h-13 rounded-2xl flex items-center justify-center mb-5" style={{ background: f.iconBg, color: f.iconColor, width: "52px", height: "52px" }}>
+                  {f.icon}
+                </div>
+                <h3 className="font-bold text-lg mb-2" style={{ color: "#1e1b4b" }}>{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#64748b" }}>{f.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ─── FEATURES SECTION ─── */}
-      <section className="py-24 bg-white px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-black text-slate-900 mb-4">Built for the Group Chat.</h2>
-            <p className="text-lg text-slate-500 font-medium">Everything you need to never argue about money again.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-                <Users className="text-emerald-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Upfront Money Pools</h3>
-              <p className="text-slate-600 leading-relaxed">
-                Everyone chips into a central pool before the trip starts. The Pool Admin holds the funds safely, so no one carries the credit card burden.
-              </p>
-            </div>
-
-            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-              <div className="w-14 h-14 bg-teal-100 rounded-2xl flex items-center justify-center mb-6">
-                <ShieldCheck className="text-teal-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Transparent Ledger</h3>
-              <p className="text-slate-600 leading-relaxed">
-                As the Admin spends the pooled money, every expense is logged. Everyone sees exactly what was collected, spent, and what's left over.
-              </p>
-            </div>
-
-            <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-              <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mb-6">
-                <Zap className="text-indigo-600" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Instant UPI Settling</h3>
-              <p className="text-slate-600 leading-relaxed">
-                When the trip is over, settle remaining balances instantly with integrated UPI IDs. No more copying and pasting bank details.
-              </p>
-            </div>
-          </div>
+      {/* ── CTA BAND ── */}
+      <section className="py-20 px-6 text-center">
+        <div
+          className="max-w-2xl mx-auto py-14 px-8 rounded-[2.5rem] space-y-6"
+          style={{ background: "linear-gradient(135deg,#7c3aed 0%,#a78bfa 60%,#60a5fa 100%)", boxShadow: "0 20px 60px rgba(124,58,237,0.35)" }}
+        >
+          <h2 className="font-black text-4xl text-white tracking-tight">Ready to trip smarter?</h2>
+          <p className="text-lg text-white/75 font-medium">Join your friends. Create your first pool. Goa awaits.</p>
+          <button
+            onClick={onLoginClick}
+            className="inline-flex items-center gap-2 bg-white font-black text-base px-8 py-4 rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95"
+            style={{ color: "#7c3aed" }}
+          >
+            Create your pool
+            <ArrowRight size={18} />
+          </button>
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="py-12 bg-slate-900 text-center px-6">
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <span className="text-2xl">🌴</span>
-          <span className="font-black text-xl text-white tracking-tight">Pool-n-Pay</span>
+      {/* ── FOOTER ── */}
+      <footer className="py-10 px-6 text-center" style={{ borderTop: "1px solid rgba(167,139,250,0.15)" }}>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <span style={{ fontSize: "20px" }}>🌴</span>
+          <span className="font-black text-lg tracking-tight" style={{ color: "#1e1b4b" }}>Pool-n-Pay</span>
         </div>
-        <p className="text-slate-500 font-medium">© {new Date().getFullYear()} Pool-n-Pay. The smartest travel companion.</p>
+        <p className="text-sm font-medium" style={{ color: "#94a3b8" }}>© {new Date().getFullYear()} Pool-n-Pay · Built for travellers, by travellers.</p>
       </footer>
     </div>
   );
