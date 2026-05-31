@@ -58,6 +58,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
   
   const [isEditingTarget, setIsEditingTarget] = useState(false);
   const [newTarget, setNewTarget] = useState("");
+  const [poolTab, setPoolTab] = useState<"expenses" | "contributions">("expenses");
 
   const fetchGroupDetails = async () => {
     setLoading(true);
@@ -279,7 +280,6 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
   const poolAdmin = group.admin || (group.members && group.members[0]) || "";
   const isCurrentAdmin = poolAdmin === profile.name;
   const isCompleted = group.status === "completed";
-  const [poolTab, setPoolTab] = useState<"expenses" | "contributions">("expenses");
 
   const poolCollected = !isSplit
     ? contributions.reduce((sum, c) => sum + c.amount, 0)
@@ -333,6 +333,10 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
   const myRemaining = Math.max(0, requiredPerMember - myContributed);
   const myPercent = requiredPerMember > 0
     ? Math.min(100, (myContributed / requiredPerMember) * 100)
+    : 0;
+
+  const deficitPerMember = poolRemaining < 0 && group.members.length > 0
+    ? Math.ceil(Math.abs(poolRemaining) / group.members.length)
     : 0;
 
   const getSettlements = () => {
@@ -862,6 +866,33 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                 </form>
               ) : (
                 <form onSubmit={handleAddContribution} className="space-y-4">
+                  {/* Deficit Alert banner */}
+                  {poolRemaining < 0 && (
+                    <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-2 animate-pulse">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-rose-950 flex items-center gap-1">
+                            <span>⚠️</span> Group Deficit Active
+                          </p>
+                          <p className="text-[10.5px] text-rose-700 mt-0.5 font-medium">
+                            The pot has run dry. Your share of the deficit is <span className="font-extrabold">₹{deficitPerMember.toLocaleString()}</span>.
+                          </p>
+                        </div>
+                        <span className="font-mono font-black text-rose-600 text-sm">
+                          ₹{deficitPerMember.toLocaleString()}
+                        </span>
+                      </div>
+                      
+                      <button
+                        type="button"
+                        onClick={() => setPoolAmt(deficitPerMember.toString())}
+                        className="w-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs py-2.5 rounded-xl transition-colors cursor-pointer shadow-sm active:scale-95"
+                      >
+                        Fill Deficit Share — ₹{deficitPerMember.toLocaleString()}
+                      </button>
+                    </div>
+                  )}
+
                   {/* Your share status banner */}
                   {requiredPerMember > 0 && (
                     <div className={`rounded-2xl p-4 border ${ myRemaining === 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200' }`}>
@@ -905,13 +936,22 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                     </label>
                     {/* Quick-pick buttons — includes share amounts */}
                     <div className="flex gap-2 flex-wrap mb-3">
+                      {poolRemaining < 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setPoolAmt(deficitPerMember.toString())}
+                          className="bg-rose-50 border border-rose-300 hover:bg-rose-100 text-rose-800 font-mono font-bold text-xs py-2.5 px-3 rounded-xl transition-colors cursor-pointer flex-shrink-0"
+                        >
+                          Deficit Share (₹{deficitPerMember.toLocaleString()})
+                        </button>
+                      )}
                       {myRemaining > 0 && (
                         <button
                           type="button"
                           onClick={() => setPoolAmt(myRemaining.toString())}
                           className="bg-amber-50 border border-amber-300 hover:bg-amber-100 text-amber-800 font-mono font-bold text-xs py-2.5 px-3 rounded-xl transition-colors cursor-pointer flex-shrink-0"
                         >
-                          My share (₹{myRemaining.toLocaleString()})
+                          My Share (₹{myRemaining.toLocaleString()})
                         </button>
                       )}
                       {[500, 1000, 2000].map((v) => (
