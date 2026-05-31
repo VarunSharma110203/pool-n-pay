@@ -375,35 +375,31 @@ export const dbService = {
     return groupId;
   },
 
-  searchRealUsers: async (queryText: string) => {
+  findUserByInviteCode: async (code: string) => {
     const profile = await dbService.getProfile();
-    if (!profile) return [];
+    if (!profile) return null;
     
-    const snap = await getDocs(collection(db, "profiles"));
-    const results: any[] = [];
-    const term = queryText.toLowerCase().trim();
+    const cleanCode = code.trim().toUpperCase();
+    if (cleanCode === profile.invite_code) return null; // Can't add self
     
+    const q = query(collection(db, "profiles"), where("invite_code", "==", cleanCode));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    
+    const d = snap.docs[0];
+    const data = d.data();
+    
+    // Check if already friends
     const friends = await dbService.getFriends();
-    const friendNames = new Set(friends.map(f => f.name.toLowerCase()));
+    const isFriend = friends.some(f => f.name.toLowerCase() === data.name.toLowerCase());
     
-    snap.forEach(d => {
-      const data = d.data();
-      const name = data.name || "";
-      if (
-        name.toLowerCase().includes(term) &&
-        name.toLowerCase() !== profile.name.toLowerCase() &&
-        !friendNames.has(name.toLowerCase())
-      ) {
-        results.push({
-          id: d.id,
-          name: name,
-          avatar: data.avatar || name.slice(0, 2).toUpperCase(),
-          upi_id: data.upi_id || `${name.replace(/\s+/g,"").toLowerCase()}@upi`
-        });
-      }
-    });
-    
-    return results;
+    return {
+      id: d.id,
+      name: data.name,
+      avatar: data.avatar || data.name.slice(0, 2).toUpperCase(),
+      upi_id: data.upi_id || `${data.name.replace(/\s+/g,"").toLowerCase()}@upi`,
+      isAlreadyFriend: isFriend
+    };
   },
 
   getOrCreateDirectGroup: async (friendName: string) => {

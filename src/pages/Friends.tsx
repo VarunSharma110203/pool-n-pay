@@ -63,7 +63,7 @@ export default function Friends({ profile }: Props) {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; avatar: string; upi_id: string }>>([]);
+  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; avatar: string; upi_id: string; isReal?: boolean; isAlreadyFriend?: boolean }>>([]);
   const [toast, setToast] = useState({ message: "", show: false });
   const [addingId, setAddingId] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -112,19 +112,36 @@ export default function Friends({ profile }: Props) {
     return () => window.removeEventListener("pool_n_pay_db_change", handler);
   }, [loadFriends]);
 
-  // Search real users from database
+  // Find user by invite code or search simulated sandbox users
   useEffect(() => {
     let active = true;
-    if (searchQuery.trim().length < 2) {
+    const term = searchQuery.trim();
+    if (term.length < 2) {
       setSearchResults([]);
       return;
     }
 
     const delayDebounce = setTimeout(async () => {
       try {
-        const dbResults = await (dbService as any).searchRealUsers(searchQuery);
+        const results: any[] = [];
 
-        const q = searchQuery.toLowerCase();
+        // 1. Try to find real user by invite code (usually 6 characters)
+        if (term.length === 6) {
+          const realUser = await (dbService as any).findUserByInviteCode(term);
+          if (realUser) {
+            results.push({
+              id: realUser.id,
+              name: realUser.name,
+              avatar: realUser.avatar,
+              upi_id: realUser.upi_id,
+              isReal: true,
+              isAlreadyFriend: realUser.isAlreadyFriend
+            });
+          }
+        }
+
+        // 2. Fallback / sandbox simulated user search by name
+        const q = term.toLowerCase();
         const existingFriendNames = new Set(friends.map(f => f.name.toLowerCase()));
 
         const simResults = SIMULATED_USERS.filter(
@@ -133,18 +150,20 @@ export default function Friends({ profile }: Props) {
           id: `sim-${u.name}`,
           name: u.name,
           avatar: u.emoji,
-          upi_id: `${u.name.replace(/\s+/g,"").toLowerCase()}@upi`
+          upi_id: `${u.name.replace(/\s+/g,"").toLowerCase()}@upi`,
+          isReal: false,
+          isAlreadyFriend: false
         }));
 
         if (active) {
-          const dbNames = new Set(dbResults.map((r: any) => r.name.toLowerCase()));
-          const filteredSim = simResults.filter(s => !dbNames.has(s.name.toLowerCase()));
-          setSearchResults([...dbResults, ...filteredSim]);
+          const realNames = new Set(results.map(r => r.name.toLowerCase()));
+          const filteredSim = simResults.filter(s => !realNames.has(s.name.toLowerCase()));
+          setSearchResults([...results, ...filteredSim]);
         }
       } catch (err) {
-        console.error("Search failed:", err);
+        console.error("Invite code lookup failed:", err);
       }
-    }, 300);
+    }, 350);
 
     return () => {
       active = false;
@@ -291,15 +310,15 @@ export default function Friends({ profile }: Props) {
 
         {/* Search & Add */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 animate-fade-in delay-100">
-          <h2 className="font-bold text-slate-900 text-base mb-3">Add Friends</h2>
+          <h2 className="font-bold text-slate-900 text-base mb-3">Add Friend by Code</h2>
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name to add..."
-              className="bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+              placeholder="Enter Friend's Invite Code (e.g. ABC123)"
+              className="bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-semibold uppercase tracking-wider"
             />
             {searchQuery && (
               <button
@@ -327,13 +346,19 @@ export default function Friends({ profile }: Props) {
                       {user.id.startsWith("sim-") ? "Simulated tribe member" : "Pool-n-Pay user"}
                     </p>
                   </div>
-                  <button
-                    onClick={() => handleAddFriend(user.name, user.upi_id)}
-                    disabled={addingId === user.name}
-                    className="px-4 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-60"
-                  >
-                    {addingId === user.name ? "..." : "Add"}
-                  </button>
+                  {user.isAlreadyFriend ? (
+                    <span className="text-xs text-slate-400 font-bold px-3 py-1.5 bg-gray-100 rounded-xl">
+                      Friends
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => handleAddFriend(user.name, user.upi_id)}
+                      disabled={addingId === user.name}
+                      className="px-4 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-60"
+                    >
+                      {addingId === user.name ? "..." : "Add"}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
