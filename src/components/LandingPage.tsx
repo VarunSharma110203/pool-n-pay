@@ -90,27 +90,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
             </button>
           </div>
         </div>
-
-        {/* Floating stat cards */}
-        <div className="mt-20 flex flex-col sm:flex-row justify-center gap-5 px-4">
-          {[
-            { emoji: "💸", label: "Pool collected", value: "₹1,20,000", color: "#7c3aed", bg: "rgba(237,233,254,0.85)" },
-            { emoji: "🧾", label: "Expenses logged", value: "48 entries", color: "#0284c7", bg: "rgba(224,242,254,0.85)" },
-            { emoji: "✅", label: "Settled via UPI", value: "₹94,500", color: "#059669", bg: "rgba(209,250,229,0.85)" },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="flex items-center gap-4 px-6 py-4 rounded-2xl animate-float"
-              style={{ background: s.bg, border: "1px solid rgba(255,255,255,0.8)", backdropFilter: "blur(16px)", boxShadow: "0 4px 20px rgba(0,0,0,0.06)", minWidth: "200px" }}
-            >
-              <span style={{ fontSize: "28px" }}>{s.emoji}</span>
-              <div className="text-left">
-                <p className="text-xs font-medium" style={{ color: "#94a3b8" }}>{s.label}</p>
-                <p className="font-black text-base" style={{ color: s.color }}>{s.value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* ── HOW IT WORKS BAND ── */}
