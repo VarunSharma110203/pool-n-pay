@@ -17,7 +17,7 @@ import {
   Pencil,
 } from "lucide-react";
 import { dbService, timeAgo, db } from "../lib/firebaseClient";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, collection, addDoc } from "firebase/firestore";
 import confetti from "canvas-confetti";
 
 interface GroupDetailProps {
@@ -87,6 +87,8 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
         } else {
           const contribs = await dbService.getContributions(groupId);
           setContributions(contribs);
+          const expList = await dbService.getExpenses(groupId);
+          setExpenses(expList);
         }
       }
 
@@ -119,22 +121,34 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
 
   const handleAddExpense = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!expenseDesc.trim() || !expenseAmt || expenseParticipants.length === 0)
+    if (!expenseDesc.trim() || !expenseAmt)
+      return;
+
+    if (isSplit && expenseParticipants.length === 0)
       return;
 
     try {
       const amount = parseFloat(expenseAmt);
-      const payerAvatar =
-        expensePayer === profile.name ? profile.avatar : "🧑‍🦱";
-
-      await dbService.addExpense(
-        groupId,
-        expenseDesc,
-        amount,
-        expensePayer,
-        payerAvatar,
-        expenseParticipants
-      );
+      if (isSplit) {
+        const payerAvatar = expensePayer === profile.name ? profile.avatar : "🧑‍🦱";
+        await dbService.addExpense(
+          groupId,
+          expenseDesc,
+          amount,
+          expensePayer,
+          payerAvatar,
+          expenseParticipants
+        );
+      } else {
+        await dbService.addExpense(
+          groupId,
+          expenseDesc,
+          amount,
+          profile.name,
+          profile.avatar,
+          group.members
+        );
+      }
 
       setExpenseDesc("");
       setExpenseAmt("");
@@ -211,6 +225,40 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
     }
   };
 
+  const handleCompletePool = async () => {
+    if (
+      confirm(
+        `Are you sure you want to end the trip "${group.name}"? This will lock the pool, prevent any further expenses or contributions, and calculate refunds for all members based on the remaining pot of ₹${poolRemaining.toLocaleString()}.`
+      )
+    ) {
+      try {
+        await updateDoc(doc(db, "groups", groupId), { status: "completed" });
+        
+        // Add activity
+        await addDoc(collection(db, "activities"), {
+          group_id: groupId,
+          avatar: profile.avatar,
+          name: profile.name,
+          action: `completed the trip and finalized refunds`,
+          amount: `Refundable Pot: ₹${poolRemaining.toLocaleString()}`,
+          type: "pool",
+          created_at: new Date().toISOString()
+        });
+
+        confetti({
+          particleCount: 200,
+          spread: 100,
+          colors: ["#10b981", "#3b82f6", "#f59e0b"],
+        });
+
+        fetchGroupDetails();
+      } catch (err) {
+        console.error("Failed to complete group:", err);
+        alert("Failed to end the trip. Please try again.");
+      }
+    }
+  };
+
   const toggleParticipant = (memberName: string) => {
     if (expenseParticipants.includes(memberName)) {
       setExpenseParticipants(expenseParticipants.filter((p) => p !== memberName));
@@ -230,10 +278,18 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
   const isSplit = group.mode === "split";
   const poolAdmin = group.admin || (group.members && group.members[0]) || "";
   const isCurrentAdmin = poolAdmin === profile.name;
+  const isCompleted = group.status === "completed";
+  const [poolTab, setPoolTab] = useState<"expenses" | "contributions">("expenses");
 
   const poolCollected = !isSplit
     ? contributions.reduce((sum, c) => sum + c.amount, 0)
     : 0;
+  const poolSpent = !isSplit
+    ? expenses.reduce((sum, e) => sum + e.amount, 0)
+    : 0;
+  const poolRemaining = poolCollected - poolSpent;
+  const potentialRemaining = poolRemaining - (parseFloat(expenseAmt) || 0);
+
   const poolProgress =
     !isSplit && group.target_amount
       ? (poolCollected / group.target_amount) * 100
@@ -254,6 +310,22 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
         memberContribMap[c.member] += c.amount;
       }
     });
+  }
+
+  // Refund calculation logic
+  const memberRefundMap: { [name: string]: number } = {};
+  if (!isSplit && poolRemaining > 0) {
+    if (poolCollected > 0) {
+      group.members.forEach((m: string) => {
+        const contributed = memberContribMap[m] ?? 0;
+        const ratio = contributed / poolCollected;
+        memberRefundMap[m] = Math.floor(poolRemaining * ratio);
+      });
+    } else {
+      group.members.forEach((m: string) => {
+        memberRefundMap[m] = Math.floor(poolRemaining / group.members.length);
+      });
+    }
   }
 
   // How much the current user still owes
@@ -419,20 +491,20 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
             </div>
           </div>
         ) : (
-        <div className="mt-6 border-t border-white/15 pt-5 space-y-4">
-            <div className="flex justify-between items-end">
+          <div className="mt-6 border-t border-white/15 pt-5 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-[10px] uppercase font-bold text-white/60 tracking-wider">
-                  Total Funds Gathered
+                  Remaining Pot 🍯
                 </p>
-                <p className="text-2xl md:text-3xl font-mono font-bold mt-0.5">
-                  ₹{poolCollected.toLocaleString()}
+                <p className={`text-2xl md:text-3xl font-mono font-black mt-0.5 ${poolRemaining >= 0 ? 'text-teal-200' : 'text-red-300'}`}>
+                  ₹{poolRemaining.toLocaleString()}
                 </p>
               </div>
               {group.target_amount && (
                 <div className="text-right flex flex-col items-end">
                   <p className="text-[10px] uppercase font-bold text-white/60 tracking-wider">
-                    Target
+                    Target Goal
                   </p>
                   {isCurrentAdmin ? (
                     isEditingTarget ? (
@@ -453,13 +525,15 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 mt-0.5 group/target cursor-pointer" onClick={() => { setNewTarget(group.target_amount.toString()); setIsEditingTarget(true); }}>
+                      <div className="flex items-center gap-2 mt-0.5 group/target cursor-pointer" onClick={() => { if (!isCompleted) { setNewTarget(group.target_amount.toString()); setIsEditingTarget(true); } }}>
                         <p className="text-lg font-mono font-bold text-teal-200">
                           ₹{group.target_amount.toLocaleString()}
                         </p>
-                        <button className="opacity-0 group-hover/target:opacity-100 transition-opacity text-white/40 hover:text-white">
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
+                        {!isCompleted && (
+                          <button className="opacity-0 group-hover/target:opacity-100 transition-opacity text-white/40 hover:text-white">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     )
                   ) : (
@@ -470,6 +544,29 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                 </div>
               )}
             </div>
+            {/* Split collected and spent summary */}
+            <div className="grid grid-cols-2 gap-3 bg-white/10 rounded-2xl p-3 border border-white/15">
+              <div className="text-center">
+                <p className="text-[10px] text-white/55 font-bold uppercase tracking-wider mb-1">Total Pooled</p>
+                <p className="font-mono font-bold text-sm text-emerald-300">₹{poolCollected.toLocaleString()}</p>
+              </div>
+              <div className="text-center border-l border-white/15">
+                <p className="text-[10px] text-white/55 font-bold uppercase tracking-wider mb-1">Total Spent</p>
+                <p className="font-mono font-bold text-sm text-amber-300">₹{poolSpent.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Deficit Warning / Smart Alert */}
+            {poolRemaining < 0 && (
+              <div className="bg-rose-500/20 border border-rose-500/35 rounded-2xl p-4 space-y-1">
+                <p className="text-xs font-bold text-rose-300 flex items-center gap-1">
+                  <span>⚠️</span> Insufficient Funds (Deficit: ₹{Math.abs(poolRemaining).toLocaleString()})
+                </p>
+                <p className="text-[10px] text-white/70">
+                  The pot is empty. Each member should contribute an additional **₹{Math.ceil(Math.abs(poolRemaining) / group.members.length).toLocaleString()}** to cover the deficit.
+                </p>
+              </div>
+            )}
 
             {/* Per-member equal share */}
             {requiredPerMember > 0 && (
@@ -517,37 +614,107 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
         )}
       </div>
 
+      {/* Tab Switcher for Pool Mode */}
+      {!isSplit && (
+        <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-gray-200/60 max-w-md mx-auto w-full shadow-inner animate-fade-in">
+          <button
+            onClick={() => {
+              setPoolTab("expenses");
+              setShowAddForm(false);
+            }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 cursor-pointer ${
+              poolTab === "expenses"
+                ? "bg-white text-teal-600 shadow-sm scale-[1.02]"
+                : "text-slate-500 hover:text-slate-800 hover:bg-white/40"
+            }`}
+          >
+            <span>🥥</span> Pool Expenses
+          </button>
+          <button
+            onClick={() => {
+              setPoolTab("contributions");
+              setShowAddForm(false);
+            }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-extrabold rounded-xl transition-all duration-300 cursor-pointer ${
+              poolTab === "contributions"
+                ? "bg-white text-emerald-600 shadow-sm scale-[1.02]"
+                : "text-slate-500 hover:text-slate-800 hover:bg-white/40"
+            }`}
+          >
+            <span>💰</span> Contributions
+          </button>
+        </div>
+      )}
+
+      {/* Completed Alert Card */}
+      {isCompleted && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-5 shadow-sm flex items-start gap-3 animate-fade-in max-w-2xl mx-auto w-full">
+          <div className="text-3xl select-none">🏝️</div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-extrabold text-emerald-950">
+              Trip Completed & Settled!
+            </h4>
+            <p className="text-xs text-slate-600">
+              This pool group is locked and completed. The remaining balance of <span className="font-black text-emerald-700">₹{poolRemaining.toLocaleString()}</span> has been finalized for refunds.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Grid */}
       <div className="grid md:grid-cols-12 gap-6">
         {/* Left — Expenses / Contributions */}
         <div className="md:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-slate-900">
-              {isSplit ? "Group Expenses" : "Pool Contributions"}
+              {isSplit
+                ? "Group Expenses"
+                : poolTab === "expenses"
+                ? "Pot Expenses 🥥"
+                : "Pool Contributions 💰"}
             </h3>
 
-          <div className="flex gap-2">
-            {isSplit && (
-              <button
-                onClick={() => setShowSettleModal(true)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-700 border border-teal-200 bg-teal-50 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-              >
-                <QrCode className="w-3.5 h-3.5" strokeWidth={2.5} />
-                Settle Up
-              </button>
-            )}
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
-            >
-              <PlusCircle className="w-3.5 h-3.5" />
-              {showAddForm
-                ? "Close"
-                : isSplit
-                ? "Add Expense"
-                : "Add Fund"}
-            </button>
-          </div>
+            <div className="flex gap-2">
+              {isCompleted ? (
+                <span className="flex items-center gap-1.5 text-xs font-bold text-slate-500 border border-slate-200 bg-slate-50 px-3 py-1.5 rounded-xl">
+                  🔒 Locked & Completed
+                </span>
+              ) : (
+                <>
+                  {isSplit ? (
+                    <button
+                      onClick={() => setShowSettleModal(true)}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-700 border border-teal-200 bg-teal-50 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+                    >
+                      <QrCode className="w-3.5 h-3.5" strokeWidth={2.5} />
+                      Settle Up
+                    </button>
+                  ) : (
+                    isCurrentAdmin && (
+                      <button
+                        onClick={handleCompletePool}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 border border-rose-200 bg-rose-50 px-3 py-1.5 rounded-xl transition-all cursor-pointer animate-pulse"
+                      >
+                        🏁 End Trip & Refund
+                      </button>
+                    )
+                  )}
+                  <button
+                    onClick={() => setShowAddForm(!showAddForm)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-emerald-700 border border-emerald-200 bg-emerald-50 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    {showAddForm
+                      ? "Close"
+                      : isSplit
+                      ? "Add Expense"
+                      : poolTab === "expenses"
+                      ? "Add Pool Expense"
+                      : "Add Fund"}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Add Form Panel */}
@@ -559,6 +726,11 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                     <Split className="w-4 h-4 text-rose-500" />
                     Record New Shared Expense
                   </>
+                ) : poolTab === "expenses" ? (
+                  <>
+                    <Wallet className="w-4 h-4 text-teal-600" />
+                    Log Pot Spending Expense
+                  </>
                 ) : (
                   <>
                     <Wallet className="w-4 h-4 text-teal-600" />
@@ -567,7 +739,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                 )}
               </h4>
 
-              {isSplit ? (
+              {isSplit || (!isSplit && poolTab === "expenses") ? (
                 <form onSubmit={handleAddExpense} className="space-y-4">
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-2">
@@ -598,69 +770,94 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-teal-900/60 uppercase tracking-wider mb-1">
-                        Who Paid?
-                      </label>
-                      <select
-                        value={expensePayer}
-                        onChange={(e) => setExpensePayer(e.target.value)}
-                        className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-                      >
-                        {group.members.map((m: string) => (
-                          <option key={m} value={m}>
-                            {m === profile.name ? `You (${profile.name})` : m}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold text-teal-900/60 uppercase tracking-wider mb-1">
-                        Split Cost
-                      </label>
-                      <div className="bg-teal-100 rounded-xl px-4 py-3 text-center text-sm font-mono font-bold text-teal-800">
-                        {expenseAmt
-                          ? `₹${Math.round(
-                              parseFloat(expenseAmt) /
-                                expenseParticipants.length
-                            ).toLocaleString()} each`
-                          : "₹0 each"}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-teal-900/60 uppercase tracking-wider mb-2">
-                      Include in split:
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {group.members.map((m: string) => {
-                        const included = expenseParticipants.includes(m);
-                        return (
-                          <button
-                            key={m}
-                            type="button"
-                            onClick={() => toggleParticipant(m)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                              included
-                                ? "bg-teal-600 border-teal-600 text-white shadow-sm"
-                                : "bg-white border-gray-200 text-slate-600 hover:bg-teal-50"
-                            }`}
+                  {isSplit ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-teal-900/60 uppercase tracking-wider mb-1">
+                            Who Paid?
+                          </label>
+                          <select
+                            value={expensePayer}
+                            onChange={(e) => setExpensePayer(e.target.value)}
+                            className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
                           >
-                            {m === profile.name ? "You" : m}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                            {group.members.map((m: string) => (
+                              <option key={m} value={m}>
+                                {m === profile.name ? `You (${profile.name})` : m}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-bold text-teal-900/60 uppercase tracking-wider mb-1">
+                            Split Cost
+                          </label>
+                          <div className="bg-teal-100 rounded-xl px-4 py-3 text-center text-sm font-mono font-bold text-teal-800">
+                            {expenseAmt
+                              ? `₹${Math.round(
+                                  parseFloat(expenseAmt) /
+                                    expenseParticipants.length
+                                ).toLocaleString()} each`
+                              : "₹0 each"}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-teal-900/60 uppercase tracking-wider mb-2">
+                          Include in split:
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {group.members.map((m: string) => {
+                            const included = expenseParticipants.includes(m);
+                            return (
+                              <button
+                                key={m}
+                                type="button"
+                                onClick={() => toggleParticipant(m)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                                  included
+                                    ? "bg-teal-600 border-teal-600 text-white shadow-sm"
+                                    : "bg-white border-gray-200 text-slate-600 hover:bg-teal-50"
+                                }`}
+                              >
+                                {m === profile.name ? "You" : m}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {potentialRemaining < 0 && (
+                        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-xs text-rose-800 space-y-1">
+                          <p className="font-bold flex items-center gap-1">
+                            <span>⚠️</span> Potential Deficit Alert
+                          </p>
+                          <p>
+                            This expense will exceed the remaining pot balance by <span className="font-extrabold">₹{Math.abs(potentialRemaining).toLocaleString()}</span>.
+                          </p>
+                        </div>
+                      )}
+                      <div className="bg-teal-100/50 rounded-2xl p-4 border border-teal-200/50 text-xs text-teal-800 space-y-1">
+                        <p className="font-bold flex items-center gap-1">
+                          <span>ℹ️</span> Pot Expense Details
+                        </p>
+                        <p>
+                          This expense will be deducted directly from the group's pooled balance (₹{poolRemaining.toLocaleString()} remaining).
+                        </p>
+                      </div>
+                    </>
+                  )}
 
                   <button
                     type="submit"
                     className="w-full gradient-sunset text-white font-semibold text-sm py-3 rounded-xl shadow-sm hover:brightness-110 active:scale-95 transition-all cursor-pointer"
                   >
-                    Add Expense
+                    {!isSplit ? "Log Pot Expense" : "Add Expense"}
                   </button>
                 </form>
               ) : (
@@ -754,6 +951,72 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
             </div>
           )}
 
+          {/* Refund Settlements Card for completed Pool */}
+          {!isSplit && isCompleted && (
+            <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-5 space-y-4 animate-fade-in mb-4">
+              <h3 className="text-sm font-extrabold text-emerald-900 flex items-center gap-1.5">
+                <span>🤝</span> Refund Settlements
+              </h3>
+              
+              {poolRemaining > 0 ? (
+                <div className="space-y-3">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Refunds calculated based on contribution share:
+                  </p>
+                  <div className="space-y-2">
+                    {group.members.map((member: string) => {
+                      const refund = memberRefundMap[member] ?? 0;
+                      const isMe = member === profile.name;
+                      return (
+                        <div
+                          key={member}
+                          className="flex justify-between items-center p-3 rounded-xl bg-emerald-50/50 border border-emerald-100/50 text-xs"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-[9px]">
+                              {member.slice(0, 2).toUpperCase()}
+                            </div>
+                            <span className="font-bold text-slate-800">
+                              {isMe ? `You (${profile.name})` : member}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono font-bold text-emerald-700">
+                              ₹{refund.toLocaleString()}
+                            </span>
+                            
+                            {!isMe && refund > 0 && (
+                              <button
+                                onClick={() => {
+                                  let upiId = member.toLowerCase().replace(/\s+/g, '') + '@upi';
+                                  const friend = friends.find(f => f.name === member);
+                                  if (friend) upiId = friend.upi_id;
+                                  setActiveQrData({
+                                    name: member,
+                                    upiId,
+                                    amount: refund
+                                  });
+                                }}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[9px] px-2 py-1 rounded-lg transition-colors cursor-pointer"
+                              >
+                                Refund via UPI
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3.5 text-xs text-amber-800 text-center">
+                  All money in the pot was fully spent! No refunds to settle. 🍹
+                </div>
+              )}
+            </div>
+          )}
+
           {/* List */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             {isSplit ? (
@@ -762,7 +1025,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                   {expenses.map((exp) => (
                     <div
                       key={exp.id}
-                      className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0"
+                      className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0 animate-fade-in"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-lg select-none">
@@ -803,6 +1066,47 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                   <Split className="w-10 h-10 text-slate-200 mx-auto mb-2" />
                   <p className="font-semibold text-slate-500">No expenses yet</p>
                   <p>Tap "Add Expense" to get started!</p>
+                </div>
+              )
+            ) : poolTab === "expenses" ? (
+              expenses.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {expenses.map((exp) => (
+                    <div
+                      key={exp.id}
+                      className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0 animate-fade-in"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center text-lg select-none">
+                          🥥
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm text-slate-900">
+                            {exp.description}
+                          </p>
+                          <p className="text-[10px] text-slate-400">
+                            Deducted from Pot · Logged by{" "}
+                            <span className="font-bold text-slate-600">
+                              {exp.payer === profile.name ? "You" : exp.payer}
+                            </span>{" "}
+                            · {timeAgo(exp.created_at)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-sm font-mono font-bold text-rose-500">
+                          -₹{exp.amount.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-10 text-slate-400 text-xs">
+                  <Wallet className="w-10 h-10 text-slate-200 mx-auto mb-2 animate-pulse" />
+                  <p className="font-semibold text-slate-500">No pot expenses logged yet</p>
+                  <p>Tap "Add Pool Expense" to track your spending!</p>
                 </div>
               )
             ) : requiredPerMember > 0 ? (
@@ -880,7 +1184,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
               /* ── Free-form pool (no target set) ── */
               <div className="divide-y divide-gray-100">
                 {contributions.map((contrib: any) => (
-                  <div key={contrib.id} className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0">
+                  <div key={contrib.id} className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0 animate-fade-in">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-700 font-bold flex items-center justify-center text-xs select-none">
                         {contrib.member.slice(0, 2).toUpperCase()}
@@ -952,7 +1256,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                     </div>
 
                     {/* Admin reassign capability in pool mode */}
-                    {!isSplit && isCurrentAdmin && !isMe && (
+                    {!isSplit && isCurrentAdmin && !isMe && !isCompleted && (
                       <button
                         onClick={async () => {
                           if (confirm(`Are you sure you want to make ${m} the Pool Admin? This will direct all new contributions to their UPI ID.`)) {
