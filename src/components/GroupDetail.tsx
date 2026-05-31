@@ -296,10 +296,12 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
       : 0;
 
   // ── Pool: equal-share logic ──────────────────────────────────────────────
-  const requiredPerMember =
-    !isSplit && group.target_amount && group.members.length > 0
-      ? Math.ceil(group.target_amount / group.members.length)
-      : 0;
+  const requiredPerMember = !isSplit && group.members.length > 0
+    ? Math.max(
+        group.target_amount ? Math.ceil(group.target_amount / group.members.length) : 0,
+        Math.ceil(poolSpent / group.members.length)
+      )
+    : 0;
 
   // How much each member has contributed so far
   const memberContribMap: { [name: string]: number } = {};
@@ -315,11 +317,21 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
   // Refund calculation logic
   const memberRefundMap: { [name: string]: number } = {};
   if (!isSplit && poolRemaining > 0) {
-    if (poolCollected > 0) {
+    const averageExpense = poolSpent / group.members.length;
+    const overContributions: { [name: string]: number } = {};
+    let totalOverContribution = 0;
+
+    group.members.forEach((m: string) => {
+      const contributed = memberContribMap[m] ?? 0;
+      const over = Math.max(0, contributed - averageExpense);
+      overContributions[m] = over;
+      totalOverContribution += over;
+    });
+
+    if (totalOverContribution > 0) {
       group.members.forEach((m: string) => {
-        const contributed = memberContribMap[m] ?? 0;
-        const ratio = contributed / poolCollected;
-        memberRefundMap[m] = Math.floor(poolRemaining * ratio);
+        const over = overContributions[m] ?? 0;
+        memberRefundMap[m] = Math.floor(poolRemaining * (over / totalOverContribution));
       });
     } else {
       group.members.forEach((m: string) => {
@@ -335,27 +347,8 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
     ? Math.min(100, (myContributed / requiredPerMember) * 100)
     : 0;
 
-  // Calculate deficit share individually for the current user based on shortfall
-  let myDeficitShare = 0;
-  if (!isSplit && poolRemaining < 0 && group.members.length > 0) {
-    const targetPerMember = poolSpent / group.members.length;
-    const shortfalls: { [name: string]: number } = {};
-    let totalShortfall = 0;
-    
-    group.members.forEach((m: string) => {
-      const contributed = memberContribMap[m] ?? 0;
-      const shortfall = Math.max(0, targetPerMember - contributed);
-      shortfalls[m] = shortfall;
-      totalShortfall += shortfall;
-    });
-
-    if (totalShortfall > 0) {
-      const myShortfall = shortfalls[profile.name] ?? 0;
-      myDeficitShare = Math.round(Math.abs(poolRemaining) * (myShortfall / totalShortfall));
-    } else {
-      myDeficitShare = Math.ceil(Math.abs(poolRemaining) / group.members.length);
-    }
-  }
+  // Deficit share is simply the user's remaining shortfall relative to their fair share of total expenses
+  const myDeficitShare = poolRemaining < 0 ? myRemaining : 0;
 
   const getSettlements = () => {
     if (!isSplit || expenses.length === 0) return [];
