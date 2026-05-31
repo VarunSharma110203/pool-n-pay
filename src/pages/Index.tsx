@@ -427,14 +427,11 @@ export default function Index({ profile, onNavigate }: Props) {
 
         {loading ? (
           /* Skeleton */
-          <div
-            className="flex gap-3 overflow-x-auto pl-4 pr-4 pb-1"
-            style={{ scrollbarWidth: "none" }}
-          >
+          <div className="scroll-row px-4">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-52 h-28 rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.8)" }}
+                className="flex-shrink-0 w-72 h-28 rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.8)" }}
               />
             ))}
           </div>
@@ -460,14 +457,11 @@ export default function Index({ profile, onNavigate }: Props) {
           </div>
         ) : (
           /* Horizontal scroll list */
-          <div
-            className="flex gap-3 overflow-x-auto pl-4 pr-4 pb-1"
-            style={{ scrollbarWidth: "none" }}
-          >
+          <div className="scroll-row px-4">
             {groups.slice(0, 8).map((group) => (
               <div
                 key={group.id}
-                className="flex-shrink-0 w-52 cursor-pointer"
+                className="flex-shrink-0 w-72 cursor-pointer"
                 onClick={() => setActiveGroupId(group.id)}
               >
                 <GroupCard

@@ -350,7 +350,7 @@ export default function App() {
             {/* Status indicator */}
             <div className="mt-3 flex items-center justify-end gap-1.5">
               <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50 animate-pulse" />
-              <span className="text-white/40 text-[10px] font-semibold tracking-wide">Sandbox</span>
+              <span className="text-white/40 text-[10px] font-semibold tracking-wide">Cloud Synced</span>
             </div>
           </div>
         )}

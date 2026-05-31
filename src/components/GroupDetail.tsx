@@ -419,7 +419,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-10">
+    <div className="space-y-6 max-w-4xl mx-auto pb-10 px-4">
       {/* Sticky Header */}
       <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-gray-100 -mx-4 px-4 py-3 flex items-center justify-between">
         <button

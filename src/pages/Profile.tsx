@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Edit3, Save, X, LogOut, Bell, Volume2, AlertTriangle, Copy, CheckCircle, Shield, Smartphone, Info } from "lucide-react";
+import { Edit3, Save, X, LogOut, Bell, Volume2, Copy, CheckCircle, Shield, Smartphone, Info } from "lucide-react";
 import { dbService, getInviteCode } from "../lib/firebaseClient";
 
 interface Profile {
@@ -86,14 +86,6 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
     } catch { showToast("Failed to save"); } finally { setSaving(false); }
   };
 
-  const handleResetDb = async () => {
-    if (!window.confirm("Reset ALL demo data to defaults?")) return;
-    try {
-      (dbService as any).resetDb?.();
-      showToast("Data reset to demo defaults");
-      onProfileUpdated();
-    } catch { showToast("Reset failed"); }
-  };
 
   const copyInviteCode = () => {
     navigator.clipboard.writeText(inviteCode);
@@ -124,10 +116,10 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
           </div>
           <h1 className="text-2xl font-black text-white">{profile.name}</h1>
           {profile.upi_id && <p className="text-white/65 text-sm font-mono mt-1">{profile.upi_id}</p>}
-          {/* Sandbox badge */}
+          {/* Cloud Sync badge */}
           <div className="mt-3 glass rounded-full px-4 py-1.5 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-white/80 text-xs font-semibold">Sandbox Mode</span>
+            <span className="text-white/80 text-xs font-semibold">Cloud Synced</span>
           </div>
         </div>
       </div>
@@ -221,8 +213,8 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
             />
             <SettingRow
               icon={<Smartphone className="w-5 h-5 text-violet-500" />} iconBg="bg-violet-50"
-              title="Sandbox Mode" subtitle="Using local demo data (no server)"
-              right={<span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Active</span>}
+              title="Cloud Sync" subtitle="Data is securely saved in Firestore"
+              right={<span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Connected</span>}
             />
           </div>
         </div>
@@ -250,21 +242,11 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
           <div className="mt-4 bg-teal-50 border border-teal-100 rounded-2xl p-3.5 flex items-start gap-2.5">
             <Info className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-teal-700 leading-relaxed">
-              Pool-n-Pay runs in sandbox mode. All data is stored locally in your browser. No server or payment processing occurs.
+              Pool-n-Pay automatically syncs all trips, groups, and expenses to Cloud Firestore. Payment simulation is mock (no real transfers).
             </p>
           </div>
         </div>
 
-        {/* Danger Zone */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 animate-fade-in delay-250">
-          <p className="section-heading mb-4">Data Management</p>
-          <button onClick={handleResetDb}
-            className="w-full py-3.5 rounded-2xl border-2 border-rose-200 text-rose-500 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-rose-50 transition-colors">
-            <AlertTriangle className="w-4 h-4" />
-            Reset to Demo Data
-          </button>
-          <p className="text-xs text-slate-400 text-center mt-2">Restores default demo trips, friends and expenses</p>
-        </div>
 
         {/* Sign Out */}
         <div className="animate-fade-in delay-300 pb-4">
