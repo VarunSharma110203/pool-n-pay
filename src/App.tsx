@@ -53,6 +53,31 @@ export default function App() {
           // non-critical
         }
 
+        // Process referral/invite codes if any are pending in sessionStorage
+        const refCode = sessionStorage.getItem("pnp_referrer_code");
+        if (refCode) {
+          sessionStorage.removeItem("pnp_referrer_code");
+          try {
+            await (dbService as any).processReferralCode(refCode);
+          } catch (e) {
+            console.error("Error processing referral code:", e);
+          }
+        }
+
+        const grpCode = sessionStorage.getItem("pnp_referrer_group_code");
+        if (grpCode) {
+          sessionStorage.removeItem("pnp_referrer_group_code");
+          try {
+            const joinedGroupId = await (dbService as any).joinGroupByCode(grpCode);
+            if (joinedGroupId) {
+              setActiveTab("trips");
+              localStorage.setItem("pnp_auto_open_group", joinedGroupId);
+            }
+          } catch (e) {
+            console.error("Error joining group by code:", e);
+          }
+        }
+
         // Splash for first visit
         if (isFirstVisit()) {
           setShowSplash(true);
@@ -68,6 +93,17 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Parse URL search parameters on mount
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    const groupCode = urlParams.get("groupCode");
+    if (code) {
+      sessionStorage.setItem("pnp_referrer_code", code);
+    }
+    if (groupCode) {
+      sessionStorage.setItem("pnp_referrer_group_code", groupCode);
+    }
+
     checkAuth();
 
     const handleAuthChange = () => checkAuth();

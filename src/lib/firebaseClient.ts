@@ -80,11 +80,14 @@ export const dbService = {
       const res = await createUserWithEmailAndPassword(auth, email, password || "default123");
       if (name && upiId) {
         const initials = name.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
         await setDoc(doc(db, "profiles", res.user.uid), {
           name: name.trim(),
           upi_id: upiId,
-          avatar: initials
+          avatar: initials,
+          invite_code: code
         });
+        localStorage.setItem("pnp_invite_code", code);
       }
       window.dispatchEvent(new Event("pool_n_pay_auth_change"));
       return { error: null };
@@ -105,7 +108,16 @@ export const dbService = {
     if (!user) return null;
     const snap = await getDoc(doc(db, "profiles", user.uid));
     if (snap.exists()) {
-      cachedProfile = { id: user.uid, ...snap.data() };
+      const data = snap.data();
+      if (!data.invite_code) {
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        await updateDoc(doc(db, "profiles", user.uid), { invite_code: code });
+        data.invite_code = code;
+        localStorage.setItem("pnp_invite_code", code);
+      } else {
+        localStorage.setItem("pnp_invite_code", data.invite_code);
+      }
+      cachedProfile = { id: user.uid, ...data };
       return cachedProfile;
     }
     return null;
@@ -223,6 +235,7 @@ export const dbService = {
     if (!profile) return null;
     
     const allMembers = Array.from(new Set([profile.name, ...members]));
+    const inviteCode = `G-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     
     const ref = await addDoc(collection(db, "groups"), {
       name,
@@ -230,6 +243,7 @@ export const dbService = {
       members: allMembers,
       target_amount: targetAmount || null,
       emoji,
+      invite_code: inviteCode,
       created_at: new Date().toISOString()
     });
     
@@ -244,7 +258,152 @@ export const dbService = {
     });
     
     window.dispatchEvent(new Event("pool_n_pay_db_change"));
-    return { id: ref.id, name, mode, members: allMembers, target_amount: targetAmount, emoji, created_at: new Date().toISOString() };
+    return { id: ref.id, name, mode, members: allMembers, target_amount: targetAmount, emoji, invite_code: inviteCode, created_at: new Date().toISOString() };
+  },
+
+  processReferralCode: async (referrerCode: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const myProfile = await dbService.getProfile();
+    if (!myProfile) return;
+    
+    const cleanCode = referrerCode.trim().toUpperCase();
+    const q = query(collection(db, "profiles"), where("invite_code", "==", cleanCode));
+    const snap = await getDocs(q);
+    if (snap.empty) return;
+    
+    const inviterDoc = snap.docs[0];
+    const inviterId = inviterDoc.id;
+    const inviterData = inviterDoc.data();
+    
+    if (inviterId === user.uid) return; // Can't invite self
+    
+    // Check if friends already
+    const q1 = query(collection(db, "friends"), where("sender_name", "==", myProfile.name), where("receiver_name", "==", inviterData.name));
+    const q2 = query(collection(db, "friends"), where("sender_name", "==", inviterData.name), where("receiver_name", "==", myProfile.name));
+    const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+    
+    if (s1.empty && s2.empty) {
+      await addDoc(collection(db, "friends"), {
+        sender_name: inviterData.name,
+        sender_avatar: inviterData.avatar || inviterData.name.slice(0,2).toUpperCase(),
+        sender_upi: inviterData.upi_id || `${inviterData.name.replace(/\s+/g,"").toLowerCase()}@upi`,
+        receiver_name: myProfile.name,
+        receiver_avatar: myProfile.avatar,
+        receiver_upi: myProfile.upi_id,
+        status: "friend"
+      });
+      
+      await addDoc(collection(db, "activities"), {
+        avatar: myProfile.avatar,
+        name: myProfile.name,
+        action: `joined the tribe via ${inviterData.name}'s invite link`,
+        amount: "",
+        type: "payment",
+        created_at: new Date().toISOString()
+      });
+      
+      window.dispatchEvent(new Event("pool_n_pay_db_change"));
+    }
+  },
+
+  joinGroupByCode: async (groupCode: string): Promise<string | null> => {
+    const user = auth.currentUser;
+    if (!user) return null;
+    const myProfile = await dbService.getProfile();
+    if (!myProfile) return null;
+    
+    const cleanCode = groupCode.trim().toUpperCase();
+    const q = query(collection(db, "groups"), where("invite_code", "==", cleanCode));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    
+    const groupDoc = snap.docs[0];
+    const groupId = groupDoc.id;
+    const groupData = groupDoc.data();
+    const membersList: string[] = groupData.members || [];
+    
+    if (!membersList.includes(myProfile.name)) {
+      await updateDoc(doc(db, "groups", groupId), {
+        members: arrayUnion(myProfile.name)
+      });
+      
+      await addDoc(collection(db, "activities"), {
+        group_id: groupId,
+        avatar: myProfile.avatar,
+        name: myProfile.name,
+        action: `joined the group "${groupData.name}" via invite code`,
+        amount: "",
+        type: "pool",
+        created_at: new Date().toISOString()
+      });
+      
+      // Auto-friend all members
+      for (const memberName of membersList) {
+        if (memberName !== myProfile.name) {
+          const q1 = query(collection(db, "friends"), where("sender_name", "==", myProfile.name), where("receiver_name", "==", memberName));
+          const q2 = query(collection(db, "friends"), where("sender_name", "==", memberName), where("receiver_name", "==", myProfile.name));
+          const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+          
+          if (s1.empty && s2.empty) {
+            const pmQ = query(collection(db, "profiles"), where("name", "==", memberName));
+            const pmSnap = await getDocs(pmQ);
+            let mAvatar = memberName.slice(0,2).toUpperCase();
+            let mUpi = `${memberName.replace(/\s+/g,"").toLowerCase()}@upi`;
+            if (!pmSnap.empty) {
+              const pmData = pmSnap.docs[0].data();
+              mAvatar = pmData.avatar || mAvatar;
+              mUpi = pmData.upi_id || mUpi;
+            }
+            
+            await addDoc(collection(db, "friends"), {
+              sender_name: memberName,
+              sender_avatar: mAvatar,
+              sender_upi: mUpi,
+              receiver_name: myProfile.name,
+              receiver_avatar: myProfile.avatar,
+              receiver_upi: myProfile.upi_id,
+              status: "friend"
+            });
+          }
+        }
+      }
+      
+      window.dispatchEvent(new Event("pool_n_pay_db_change"));
+    }
+    
+    return groupId;
+  },
+
+  searchRealUsers: async (queryText: string) => {
+    const profile = await dbService.getProfile();
+    if (!profile) return [];
+    
+    const snap = await getDocs(collection(db, "profiles"));
+    const results: any[] = [];
+    const term = queryText.toLowerCase().trim();
+    
+    const friends = await dbService.getFriends();
+    const friendNames = new Set(friends.map(f => f.name.toLowerCase()));
+    
+    snap.forEach(d => {
+      const data = d.data();
+      const name = data.name || "";
+      if (
+        name.toLowerCase().includes(term) &&
+        name.toLowerCase() !== profile.name.toLowerCase() &&
+        !friendNames.has(name.toLowerCase())
+      ) {
+        results.push({
+          id: d.id,
+          name: name,
+          avatar: data.avatar || name.slice(0, 2).toUpperCase(),
+          upi_id: data.upi_id || `${name.replace(/\s+/g,"").toLowerCase()}@upi`
+        });
+      }
+    });
+    
+    return results;
   },
 
   getOrCreateDirectGroup: async (friendName: string) => {

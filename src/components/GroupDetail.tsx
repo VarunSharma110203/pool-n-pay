@@ -16,7 +16,8 @@ import {
   Check,
   Pencil,
 } from "lucide-react";
-import { dbService, timeAgo } from "../lib/firebaseClient";
+import { dbService, timeAgo, db } from "../lib/firebaseClient";
+import { doc, updateDoc } from "firebase/firestore";
 import confetti from "canvas-confetti";
 
 interface GroupDetailProps {
@@ -62,7 +63,18 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
     setLoading(true);
     try {
       const groupsList = await dbService.getGroups();
-      const currentGroup = groupsList.find((g) => g.id === groupId);
+      let currentGroup = groupsList.find((g) => g.id === groupId);
+      
+      if (currentGroup && !currentGroup.invite_code) {
+        const code = `G-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        try {
+          await updateDoc(doc(db, "groups", groupId), { invite_code: code });
+          currentGroup.invite_code = code;
+        } catch (e) {
+          console.error("Failed to backfill group invite code:", e);
+        }
+      }
+      
       setGroup(currentGroup);
 
       if (currentGroup) {
@@ -1267,20 +1279,21 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
               Share a direct link to invite people who aren't on the app yet:
             </p>
             <div className="flex items-center gap-2 bg-teal-50 border border-teal-100 p-3 rounded-2xl">
-              <input
-                type="text"
-                readOnly
-                value={`https://poolnpay.app/join?group=${groupId}`}
-                className="bg-transparent border-none text-[11px] font-mono text-teal-700 focus:outline-none flex-1 min-w-0"
-              />
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] text-teal-600 font-bold uppercase tracking-wider">Group Invite Code</p>
+                <p className="font-mono font-black text-teal-700 text-sm tracking-wider">
+                  {group.invite_code || "Generating..."}
+                </p>
+              </div>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`https://poolnpay.app/join?group=${groupId}`);
+                  const inviteLink = `${window.location.origin}/?groupCode=${group.invite_code || ""}`;
+                  navigator.clipboard.writeText(inviteLink);
                   alert("Invite link copied to clipboard! 📋");
                 }}
                 className="bg-teal-600 hover:bg-teal-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg cursor-pointer flex-shrink-0"
               >
-                Copy
+                Copy Link
               </button>
             </div>
 
@@ -1288,7 +1301,8 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
             <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 onClick={() => {
-                  const text = `Hey! Join our travel expense pool on Pool-n-Pay for "${group.name}"! ✈️\nLink: https://poolnpay.app/join?group=${groupId}`;
+                  const inviteLink = `${window.location.origin}/?groupCode=${group.invite_code || ""}`;
+                  const text = `Hey! Join our travel expense group "${group.name}" on Pool-n-Pay! ✈️\nCode: ${group.invite_code || ""}\nLink: ${inviteLink}`;
                   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
                 }}
                 className="py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
@@ -1297,7 +1311,8 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
               </button>
               <button
                 onClick={() => {
-                  const text = `Join my travel pool on Pool-n-Pay for "${group.name}": https://poolnpay.app/join?group=${groupId}`;
+                  const inviteLink = `${window.location.origin}/?groupCode=${group.invite_code || ""}`;
+                  const text = `Join my travel group "${group.name}" on Pool-n-Pay: ${inviteLink}`;
                   window.location.href = `sms:?body=${encodeURIComponent(text)}`;
                 }}
                 className="py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"

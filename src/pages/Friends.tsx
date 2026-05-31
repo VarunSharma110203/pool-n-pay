@@ -63,7 +63,7 @@ export default function Friends({ profile }: Props) {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<typeof SIMULATED_USERS>([]);
+  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; avatar: string; upi_id: string }>>([]);
   const [toast, setToast] = useState({ message: "", show: false });
   const [addingId, setAddingId] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -82,7 +82,7 @@ export default function Friends({ profile }: Props) {
   };
 
   const code = getInviteCode();
-  const inviteLink = `https://poolnpay.app/join?code=${code}`;
+  const inviteLink = `${window.location.origin}/?code=${code}`;
   const inviteText = `Hey! 🌴 Join me on Pool-n-Pay to split our expenses!\n\nMy invite code: ${code}\n${inviteLink}`;
 
   const showToast = (message: string) => {
@@ -112,24 +112,50 @@ export default function Friends({ profile }: Props) {
     return () => window.removeEventListener("pool_n_pay_db_change", handler);
   }, [loadFriends]);
 
-  // Filter simulated users based on search
+  // Search real users from database
   useEffect(() => {
+    let active = true;
     if (searchQuery.trim().length < 2) {
       setSearchResults([]);
       return;
     }
-    const q = searchQuery.toLowerCase();
-    const existing = new Set(friends.map((f) => f.name.toLowerCase()));
-    const results = SIMULATED_USERS.filter(
-      (u) => u.name.toLowerCase().includes(q) && !existing.has(u.name.toLowerCase())
-    );
-    setSearchResults(results);
+
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const dbResults = await (dbService as any).searchRealUsers(searchQuery);
+
+        const q = searchQuery.toLowerCase();
+        const existingFriendNames = new Set(friends.map(f => f.name.toLowerCase()));
+
+        const simResults = SIMULATED_USERS.filter(
+          (u) => u.name.toLowerCase().includes(q) && !existingFriendNames.has(u.name.toLowerCase())
+        ).map(u => ({
+          id: `sim-${u.name}`,
+          name: u.name,
+          avatar: u.emoji,
+          upi_id: `${u.name.replace(/\s+/g,"").toLowerCase()}@upi`
+        }));
+
+        if (active) {
+          const dbNames = new Set(dbResults.map((r: any) => r.name.toLowerCase()));
+          const filteredSim = simResults.filter(s => !dbNames.has(s.name.toLowerCase()));
+          setSearchResults([...dbResults, ...filteredSim]);
+        }
+      } catch (err) {
+        console.error("Search failed:", err);
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(delayDebounce);
+    };
   }, [searchQuery, friends]);
 
-  const handleAddFriend = async (name: string) => {
+  const handleAddFriend = async (name: string, upiId?: string) => {
     setAddingId(name);
     try {
-      await dbService.addFriendRequest(name);
+      await dbService.addFriendRequest(name, upiId);
       showToast(`Request sent to ${name} 🌴`);
       setSearchQuery("");
       await loadFriends();
@@ -293,14 +319,16 @@ export default function Friends({ profile }: Props) {
                   className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 hover:bg-teal-50 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-full gradient-lagoon flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    {getInitials(user.name)}
+                    {user.avatar.length <= 2 ? user.avatar : getInitials(user.name)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-slate-800 text-sm">{user.name}</p>
-                    <p className="text-xs text-slate-400">Pool-n-Pay user</p>
+                    <p className="text-xs text-slate-400">
+                      {user.id.startsWith("sim-") ? "Simulated tribe member" : "Pool-n-Pay user"}
+                    </p>
                   </div>
                   <button
-                    onClick={() => handleAddFriend(user.name)}
+                    onClick={() => handleAddFriend(user.name, user.upi_id)}
                     disabled={addingId === user.name}
                     className="px-4 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-60"
                   >

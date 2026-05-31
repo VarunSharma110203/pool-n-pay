@@ -52,6 +52,12 @@ export default function Trips({ profile }: Props) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
 
+  // Join modal state
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const [joining, setJoining] = useState(false);
+  const [joinError, setJoinError] = useState("");
+
   // Create modal state
   const [step, setStep] = useState(0);
   const [tripName, setTripName] = useState("");
@@ -116,6 +122,41 @@ export default function Trips({ profile }: Props) {
     return () => window.removeEventListener("pool_n_pay_db_change", handler);
   }, [loadGroups, loadFriends]);
 
+  useEffect(() => {
+    const autoOpen = localStorage.getItem("pnp_auto_open_group");
+    if (autoOpen && groups.length > 0) {
+      const found = groups.some(g => g.id === autoOpen);
+      if (found) {
+        localStorage.removeItem("pnp_auto_open_group");
+        setActiveGroupId(autoOpen);
+      }
+    }
+  }, [groups]);
+
+  const handleJoinByCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!joinCode.trim()) return;
+
+    setJoining(true);
+    setJoinError("");
+    try {
+      const gid = await (dbService as any).joinGroupByCode(joinCode.trim());
+      if (gid) {
+        setShowJoinModal(false);
+        setJoinCode("");
+        await loadGroups();
+        setActiveGroupId(gid);
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ["#14b8a6", "#3b82f6", "#10b981"] });
+      } else {
+        setJoinError("Invalid group code. Please check and try again.");
+      }
+    } catch (err) {
+      setJoinError("Failed to join group. Please try again.");
+    } finally {
+      setJoining(false);
+    }
+  };
+
   const filteredGroups = groups.filter((g) => filter === "all" || g.mode === filter);
 
   const openCreateModal = () => {
@@ -161,10 +202,13 @@ export default function Trips({ profile }: Props) {
               {groups.length === 0 ? "Start your first adventure!" : `${groups.length} adventure${groups.length !== 1 ? "s" : ""} tracked`}
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-white font-bold text-sm">
-              {getInitials(profile.name)}
-            </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowJoinModal(true)}
+              className="px-4 h-12 rounded-2xl bg-white/20 border border-white/30 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md hover:bg-white/30 hover:scale-105 transition-all active:scale-95 cursor-pointer"
+            >
+              Join Group
+            </button>
             <button
               onClick={openCreateModal}
               className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform active:scale-95 btn-ripple"
@@ -232,12 +276,20 @@ export default function Trips({ profile }: Props) {
             <div className="text-6xl mb-4 animate-float">🏝️</div>
             <p className="font-black text-slate-800 text-xl mb-1">No groups yet!</p>
             <p className="text-slate-400 text-sm mb-6">Create your first group adventure</p>
-            <button
-              onClick={openCreateModal}
-              className="px-6 py-3 rounded-2xl gradient-tropical text-white font-bold text-sm shadow-md hover:opacity-90 transition-opacity btn-ripple"
-            >
-              + Create Group
-            </button>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={openCreateModal}
+                className="px-6 py-3 rounded-2xl gradient-tropical text-white font-bold text-sm shadow-md hover:opacity-90 transition-opacity btn-ripple"
+              >
+                + Create Group
+              </button>
+              <button
+                onClick={() => setShowJoinModal(true)}
+                className="px-6 py-3 rounded-2xl border border-teal-200 text-teal-600 bg-white font-bold text-sm shadow-sm hover:bg-teal-50 transition-colors"
+              >
+                Join with Code
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-3 animate-fade-in">
@@ -411,6 +463,60 @@ export default function Trips({ profile }: Props) {
                 </button>
               )}
             </div>
+          </div>
+        </div>
+      )}
+      {/* Join Group Modal */}
+      {showJoinModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 animate-scale-in">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-black text-slate-900 text-lg">Join Trip Group ✈️</h2>
+              <button 
+                onClick={() => { setShowJoinModal(false); setJoinError(""); setJoinCode(""); }} 
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-slate-500 hover:bg-gray-200 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleJoinByCode} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Group Invite Code</label>
+                <input 
+                  type="text"
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value)}
+                  placeholder="e.g. G-ABC123"
+                  className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-bold tracking-wider uppercase"
+                  required
+                  autoFocus
+                />
+              </div>
+              
+              {joinError && (
+                <div className="text-xs p-3 rounded-xl bg-red-50 text-red-600 font-semibold border border-red-100">
+                  {joinError}
+                </div>
+              )}
+              
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowJoinModal(false); setJoinError(""); setJoinCode(""); }}
+                  className="flex-1 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-slate-600 font-bold text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={joining || !joinCode.trim()}
+                  className="flex-1 py-3 rounded-xl gradient-tropical text-white font-bold text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+                >
+                  {joining ? "Joining..." : "Join Group"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
