@@ -13,7 +13,7 @@ import {
   Zap,
   Plus,
 } from "lucide-react";
-import { dbService } from "../lib/supabaseClient";
+import { dbService } from "../lib/firebaseClient";
 import GroupCard from "../components/GroupCard";
 import ActivityItem from "../components/ActivityItem";
 import QuickAction from "../components/QuickAction";
