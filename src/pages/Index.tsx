@@ -201,11 +201,11 @@ export default function Index({ profile, onNavigate }: Props) {
   // ─── Dashboard ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-28">
+    <div className="min-h-screen pb-28" style={{ background: "linear-gradient(160deg,#f5f3ff 0%,#ede9fe 30%,#dbeafe 65%,#e0f2fe 100%)" }}>
       <div className="max-w-5xl mx-auto">
       {/* ── 1. HERO BALANCE CARD ─────────────────────────────────────── */}
       <div className="mx-4 mt-4">
-        <div className="gradient-tropical rounded-3xl p-6 shadow-xl relative overflow-hidden">
+        <div className="rounded-3xl p-6 shadow-xl relative overflow-hidden" style={{ background: "linear-gradient(135deg,#7c3aed 0%,#9d5cf6 50%,#60a5fa 100%)", boxShadow: "0 12px 40px rgba(124,58,237,0.35)" }}>
           {/* Decorative glows */}
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-12 -left-8 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none" />
@@ -223,7 +223,7 @@ export default function Index({ profile, onNavigate }: Props) {
               className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-lg flex-shrink-0"
               style={{ minWidth: 44, minHeight: 44 }}
             >
-              <span className="text-teal-700 font-black text-sm leading-none">
+              <span className="font-black text-sm leading-none" style={{ color: "#7c3aed" }}>
                 {getInitials(profile.name)}
               </span>
             </div>
@@ -319,7 +319,7 @@ export default function Index({ profile, onNavigate }: Props) {
       {/* ── 3. OUTSTANDING BALANCES ───────────────────────────────────── */}
       {nonNullBalances.length > 0 && (
         <div className="mx-4 mt-4">
-          <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+          <div className="rounded-3xl p-5" style={{ background: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.9)", backdropFilter: "blur(12px)" }}>
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -327,7 +327,7 @@ export default function Index({ profile, onNavigate }: Props) {
                 <span className="text-sm font-bold text-slate-900">
                   Outstanding
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-black">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black" style={{ background: "#ede9fe", color: "#7c3aed" }}>
                   {nonNullBalances.length}
                 </span>
               </div>
@@ -399,7 +399,7 @@ export default function Index({ profile, onNavigate }: Props) {
                           amount: fb.amount,
                         })
                       }
-                      className="flex-shrink-0 px-3 py-1.5 gradient-tropical text-white font-bold text-[10px] rounded-xl shadow-sm hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                      className="flex-shrink-0 px-3 py-1.5 text-white font-bold text-[10px] rounded-xl shadow-sm hover:brightness-110 active:scale-95 transition-all cursor-pointer" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}
                     >
                       Settle
                     </button>
@@ -415,10 +415,10 @@ export default function Index({ profile, onNavigate }: Props) {
       <div className="mt-6">
         {/* Section header */}
         <div className="flex items-center justify-between mx-4 mb-3">
-          <h2 className="text-lg font-bold text-slate-900">Your Groups</h2>
+          <h2 className="text-lg font-bold font-bold" style={{ color: "#1e1b4b" }}>Your Groups</h2>
           <button
             onClick={() => onNavigate("trips")}
-            className="flex items-center gap-1 text-teal-600 text-sm font-semibold hover:text-teal-700 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-sm font-semibold hover:opacity-70 transition-opacity cursor-pointer" style={{ color: "#7c3aed" }}
           >
             View all
             <ArrowRight className="w-4 h-4" />
@@ -434,14 +434,14 @@ export default function Index({ profile, onNavigate }: Props) {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-52 h-28 bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse"
+                className="flex-shrink-0 w-52 h-28 rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.8)" }}
               />
             ))}
           </div>
         ) : groups.length === 0 ? (
           /* Empty state */
           <div className="mx-4">
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+            <div className="rounded-2xl p-8 text-center" style={{ background: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.9)", backdropFilter: "blur(12px)" }}>
               <div className="text-4xl mb-2">🏝️</div>
               <p className="font-bold text-slate-700 text-sm mb-1">
                 No adventures yet
@@ -451,7 +451,7 @@ export default function Index({ profile, onNavigate }: Props) {
               </p>
               <button
                 onClick={() => onNavigate("trips")}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl gradient-tropical text-white font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white font-semibold text-xs shadow-sm hover:brightness-110 active:scale-95 transition-all cursor-pointer" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}
               >
                 <Plus className="w-3.5 h-3.5" />
                 New Group
@@ -490,7 +490,7 @@ export default function Index({ profile, onNavigate }: Props) {
       <div className="mx-4 mt-6">
         {/* Section header */}
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-slate-900">Recent Activity</h2>
+          <h2 className="text-lg font-bold font-bold" style={{ color: "#1e1b4b" }}>Recent Activity</h2>
           <button
             onClick={() => loadAll(true)}
             className={`w-8 h-8 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center text-slate-400 hover:bg-gray-50 transition-colors cursor-pointer ${
@@ -508,13 +508,13 @@ export default function Index({ profile, onNavigate }: Props) {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 h-16 animate-pulse"
+                className="rounded-2xl h-16 animate-pulse" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.8)" }}
               />
             ))}
           </div>
         ) : activities.length === 0 ? (
           /* Empty */
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
+          <div className="rounded-2xl p-10 text-center" style={{ background: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.9)", backdropFilter: "blur(12px)" }}>
             <div className="text-4xl mb-2">🌊</div>
             <p className="text-slate-500 text-sm">
               Nothing yet — add your first expense!
@@ -522,7 +522,7 @@ export default function Index({ profile, onNavigate }: Props) {
           </div>
         ) : (
           /* Activity feed */
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.80)", border: "1px solid rgba(255,255,255,0.9)", backdropFilter: "blur(12px)" }}>
             {activities.map((activity, idx) => (
               <div
                 key={activity.id}
@@ -547,7 +547,7 @@ export default function Index({ profile, onNavigate }: Props) {
       {/* ─────────────────────────────────────────────────────────────── */}
       {showSettleDialog && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 space-y-4 animate-scale-in">
+          <div className="rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-scale-in" style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(255,255,255,0.95)", backdropFilter: "blur(20px)" }}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="text-base font-extrabold text-slate-900">
@@ -616,7 +616,7 @@ export default function Index({ profile, onNavigate }: Props) {
                     });
                     setShowSettleDialog(null);
                   }}
-                  className="w-full gradient-tropical text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm"
+                  className="w-full text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}
                 >
                   <QrCode className="w-4 h-4" />
                   Pay via UPI QR
@@ -649,7 +649,7 @@ export default function Index({ profile, onNavigate }: Props) {
                       showSettleDialog.amount
                     );
                   }}
-                  className="w-full gradient-tropical text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm"
+                  className="w-full text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}
                 >
                   Record Cash Received
                 </button>
@@ -664,7 +664,7 @@ export default function Index({ profile, onNavigate }: Props) {
       {/* ─────────────────────────────────────────────────────────────── */}
       {activeQrData && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-gray-100 space-y-4 animate-scale-in">
+          <div className="rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-scale-in" style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(255,255,255,0.95)", backdropFilter: "blur(20px)" }}>
             {/* Header */}
             <div className="flex items-center justify-between">
               <h3 className="text-base font-extrabold text-slate-900">
@@ -696,7 +696,7 @@ export default function Index({ profile, onNavigate }: Props) {
                 onChange={(e) =>
                   setActiveQrData({ ...activeQrData, upiId: e.target.value })
                 }
-                className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 w-full text-xs font-mono focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                className="rounded-xl px-3 py-2.5 w-full text-xs font-mono focus:outline-none transition-all" style={{ background: "rgba(237,233,254,0.4)", border: "1px solid rgba(167,139,250,0.25)", color: "#1e1b4b" }}
               />
               <p className="text-[10px] text-slate-400">
                 ✏️ Edit to test with a real UPI handle
@@ -725,7 +725,7 @@ export default function Index({ profile, onNavigate }: Props) {
             </div>
 
             {/* Tip box */}
-            <p className="text-[10px] text-teal-700 bg-teal-50 border border-teal-100 p-3 rounded-xl text-center leading-relaxed">
+            <p className="text-[10px] p-3 rounded-xl text-center leading-relaxed font-medium" style={{ background: "#ede9fe", color: "#7c3aed", border: "1px solid rgba(167,139,250,0.3)" }}>
               💡 Open any UPI app (GPay, PhonePe, Paytm) and scan this QR to
               pay instantly.
             </p>
@@ -740,7 +740,7 @@ export default function Index({ profile, onNavigate }: Props) {
                     activeQrData.amount
                   )
                 }
-                className="flex-1 gradient-palm text-white font-semibold text-xs py-3 rounded-xl hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm"
+                className="flex-1 text-white font-semibold text-xs py-3 rounded-xl hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#059669,#34d399)" }}
               >
                 I've Paid! ✓
               </button>
