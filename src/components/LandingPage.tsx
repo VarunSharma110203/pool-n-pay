@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { ArrowRight, ShieldCheck, Zap, Users } from "lucide-react";
 
 interface LandingPageProps {
@@ -6,12 +6,6 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick }) => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-200">
       {/* ─── HEADER ─── */}
