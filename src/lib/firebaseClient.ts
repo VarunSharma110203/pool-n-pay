@@ -9,12 +9,13 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBTCLMQiu9asDbsMdRTMuD_F-zrMp6d4U8",
+  authDomain: "poolandpay.firebaseapp.com",
+  projectId: "poolandpay",
+  storageBucket: "poolandpay.firebasestorage.app",
+  messagingSenderId: "949364816883",
+  appId: "1:949364816883:web:6861618eed4521aa3ef086",
+  measurementId: "G-RRPFF65YN0"
 };
 
 export const app = initializeApp(firebaseConfig);
