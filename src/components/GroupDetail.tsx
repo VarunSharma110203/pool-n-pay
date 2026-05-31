@@ -1063,28 +1063,23 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
               </span>
             </p>
 
-            <div className="text-left space-y-1 relative">
+            <div className="text-left space-y-1">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                UPI ID (Change to your own real handle to test scanning)
+                Recipient UPI ID
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={activeQrData.upiId}
-                  onChange={(e) => setActiveQrData({ ...activeQrData, upiId: e.target.value })}
-                  className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 w-full text-xs font-mono focus:outline-none focus:ring-1 focus:ring-teal-500"
-                />
+              <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                <span className="text-xs font-mono text-slate-800 truncate mr-2">{activeQrData.upiId}</span>
                 <button
+                  type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(activeQrData.upiId);
                     setCopiedUpi(true);
                     setTimeout(() => setCopiedUpi(false), 2000);
                   }}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center min-w-[50px] ${
-                    copiedUpi ? 'bg-emerald-500 text-white' : 'bg-gray-100 hover:bg-gray-200 text-slate-600'
-                  }`}
+                  className="text-slate-500 hover:text-slate-700 flex-shrink-0 cursor-pointer p-1 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center"
+                  title="Copy UPI ID"
                 >
-                  {copiedUpi ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copiedUpi ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
             </div>
