@@ -335,9 +335,27 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
     ? Math.min(100, (myContributed / requiredPerMember) * 100)
     : 0;
 
-  const deficitPerMember = poolRemaining < 0 && group.members.length > 0
-    ? Math.ceil(Math.abs(poolRemaining) / group.members.length)
-    : 0;
+  // Calculate deficit share individually for the current user based on shortfall
+  let myDeficitShare = 0;
+  if (!isSplit && poolRemaining < 0 && group.members.length > 0) {
+    const targetPerMember = poolSpent / group.members.length;
+    const shortfalls: { [name: string]: number } = {};
+    let totalShortfall = 0;
+    
+    group.members.forEach((m: string) => {
+      const contributed = memberContribMap[m] ?? 0;
+      const shortfall = Math.max(0, targetPerMember - contributed);
+      shortfalls[m] = shortfall;
+      totalShortfall += shortfall;
+    });
+
+    if (totalShortfall > 0) {
+      const myShortfall = shortfalls[profile.name] ?? 0;
+      myDeficitShare = Math.round(Math.abs(poolRemaining) * (myShortfall / totalShortfall));
+    } else {
+      myDeficitShare = Math.ceil(Math.abs(poolRemaining) / group.members.length);
+    }
+  }
 
   const getSettlements = () => {
     if (!isSplit || expenses.length === 0) return [];
@@ -562,13 +580,21 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
 
             {/* Deficit Warning / Smart Alert */}
             {poolRemaining < 0 && (
-              <div className="bg-rose-500/20 border border-rose-500/35 rounded-2xl p-4 space-y-1">
+              <div className="bg-rose-500/20 border border-rose-500/35 rounded-2xl p-4 space-y-1 text-left">
                 <p className="text-xs font-bold text-rose-300 flex items-center gap-1">
                   <span>⚠️</span> Insufficient Funds (Deficit: ₹{Math.abs(poolRemaining).toLocaleString()})
                 </p>
-                <p className="text-[10px] text-white/70">
-                  The pot is empty. Each member should contribute an additional **₹{Math.ceil(Math.abs(poolRemaining) / group.members.length).toLocaleString()}** to cover the deficit.
-                </p>
+                <div className="text-[10px] text-white/70 mt-0.5 leading-relaxed">
+                  {myDeficitShare > 0 ? (
+                    <p>
+                      Your share of the deficit is <span className="font-extrabold text-amber-300">₹{myDeficitShare.toLocaleString()}</span>. Please contribute to balance the pot.
+                    </p>
+                  ) : (
+                    <p>
+                      🎉 You have fully covered your share of the expenses! Other members need to contribute to balance the pot.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -868,29 +894,35 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                 <form onSubmit={handleAddContribution} className="space-y-4">
                   {/* Deficit Alert banner */}
                   {poolRemaining < 0 && (
-                    <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-2 animate-pulse">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-xs font-bold text-rose-950 flex items-center gap-1">
-                            <span>⚠️</span> Group Deficit Active
-                          </p>
-                          <p className="text-[10.5px] text-rose-700 mt-0.5 font-medium">
-                            The pot has run dry. Your share of the deficit is <span className="font-extrabold">₹{deficitPerMember.toLocaleString()}</span>.
-                          </p>
+                    myDeficitShare > 0 ? (
+                      <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-2 animate-pulse">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs font-bold text-rose-950 flex items-center gap-1">
+                              <span>⚠️</span> Group Deficit Active
+                            </p>
+                            <p className="text-[10.5px] text-rose-700 mt-0.5 font-medium">
+                              The pot has run dry. Your share of the deficit is <span className="font-extrabold">₹{myDeficitShare.toLocaleString()}</span>.
+                            </p>
+                          </div>
+                          <span className="font-mono font-black text-rose-600 text-sm">
+                            ₹{myDeficitShare.toLocaleString()}
+                          </span>
                         </div>
-                        <span className="font-mono font-black text-rose-600 text-sm">
-                          ₹{deficitPerMember.toLocaleString()}
-                        </span>
+                        
+                        <button
+                          type="button"
+                          onClick={() => setPoolAmt(myDeficitShare.toString())}
+                          className="w-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs py-2.5 rounded-xl transition-colors cursor-pointer shadow-sm active:scale-95"
+                        >
+                          Fill Deficit Share — ₹{myDeficitShare.toLocaleString()}
+                        </button>
                       </div>
-                      
-                      <button
-                        type="button"
-                        onClick={() => setPoolAmt(deficitPerMember.toString())}
-                        className="w-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs py-2.5 rounded-xl transition-colors cursor-pointer shadow-sm active:scale-95"
-                      >
-                        Fill Deficit Share — ₹{deficitPerMember.toLocaleString()}
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-xs text-emerald-800">
+                        🎉 <span className="font-bold">Deficit Covered!</span> You have contributed ₹{myContributed.toLocaleString()} which fully covers your share of the expenses. Other members need to contribute to balance the pot.
+                      </div>
+                    )
                   )}
 
                   {/* Your share status banner */}
@@ -936,13 +968,13 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                     </label>
                     {/* Quick-pick buttons — includes share amounts */}
                     <div className="flex gap-2 flex-wrap mb-3">
-                      {poolRemaining < 0 && (
+                      {poolRemaining < 0 && myDeficitShare > 0 && (
                         <button
                           type="button"
-                          onClick={() => setPoolAmt(deficitPerMember.toString())}
+                          onClick={() => setPoolAmt(myDeficitShare.toString())}
                           className="bg-rose-50 border border-rose-300 hover:bg-rose-100 text-rose-800 font-mono font-bold text-xs py-2.5 px-3 rounded-xl transition-colors cursor-pointer flex-shrink-0"
                         >
-                          Deficit Share (₹{deficitPerMember.toLocaleString()})
+                          Deficit Share (₹{myDeficitShare.toLocaleString()})
                         </button>
                       )}
                       {myRemaining > 0 && (
