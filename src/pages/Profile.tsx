@@ -213,7 +213,7 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
             />
             <SettingRow
               icon={<Smartphone className="w-5 h-5 text-violet-500" />} iconBg="bg-violet-50"
-              title="Cloud Sync" subtitle="Data is securely saved in Firestore"
+              title="Cloud Sync" subtitle="Data is securely synced to the cloud"
               right={<span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Connected</span>}
             />
           </div>
@@ -242,7 +242,7 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
           <div className="mt-4 bg-teal-50 border border-teal-100 rounded-2xl p-3.5 flex items-start gap-2.5">
             <Info className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-teal-700 leading-relaxed">
-              Pool-n-Pay automatically syncs all trips, groups, and expenses to Cloud Firestore. Payment simulation is mock (no real transfers).
+              Pool-n-Pay automatically syncs all trips, groups, and expenses to your cloud profile. Payment simulation is mock (no real transfers).
             </p>
           </div>
         </div>
