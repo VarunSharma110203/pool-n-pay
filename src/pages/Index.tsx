@@ -18,6 +18,7 @@ import GroupCard from "../components/GroupCard";
 import ActivityItem from "../components/ActivityItem";
 import QuickAction from "../components/QuickAction";
 import { GroupDetail } from "../components/GroupDetail";
+import { PwaInstallBanner } from "../components/PwaInstallBanner";
 import confetti from "canvas-confetti";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -285,6 +286,9 @@ export default function Index({ profile, onNavigate }: Props) {
           </div>
         </div>
       </div>
+
+      {/* ── PWA Install Banner ─────────────────────────────────────── */}
+      <PwaInstallBanner page="dashboard" />
 
       {/* ── 2. QUICK ACTIONS ─────────────────────────────────────────── */}
       <div className="mx-4 mt-4">

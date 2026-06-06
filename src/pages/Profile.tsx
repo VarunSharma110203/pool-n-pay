@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Edit3, Save, X, LogOut, Bell, Volume2, Copy, CheckCircle, Shield, Smartphone, Info } from "lucide-react";
 import { dbService, getInviteCode } from "../lib/firebaseClient";
+import { PwaInstallBanner } from "../components/PwaInstallBanner";
 
 interface Profile {
   name: string;
@@ -218,6 +219,9 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
             />
           </div>
         </div>
+
+        {/* Install App Banner */}
+        <PwaInstallBanner page="profile" />
 
         {/* About */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 animate-fade-in delay-200">
