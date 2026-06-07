@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { 
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut, 
-  onAuthStateChanged 
+  onAuthStateChanged, GoogleAuthProvider, signInWithPopup 
 } from "firebase/auth";
 import { 
   getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, 
@@ -89,6 +89,34 @@ export const dbService = {
         });
         localStorage.setItem("pnp_invite_code", code);
       }
+      window.dispatchEvent(new Event("pool_n_pay_auth_change"));
+      return { error: null };
+    } catch (error: any) {
+      return { error };
+    }
+  },
+
+  signInWithGoogle: async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const res = await signInWithPopup(auth, provider);
+      
+      const docRef = doc(db, "profiles", res.user.uid);
+      const snap = await getDoc(docRef);
+      
+      if (!snap.exists()) {
+        const name = res.user.displayName || "";
+        const initials = name ? name.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) : "U";
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        await setDoc(docRef, {
+          name: name.trim(),
+          upi_id: "", // Blank indicates they need to enter a UPI ID
+          avatar: initials,
+          invite_code: code
+        });
+        localStorage.setItem("pnp_invite_code", code);
+      }
+      
       window.dispatchEvent(new Event("pool_n_pay_auth_change"));
       return { error: null };
     } catch (error: any) {

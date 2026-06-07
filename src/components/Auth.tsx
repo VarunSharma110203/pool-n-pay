@@ -42,6 +42,21 @@ export default function Auth({ onAuthSuccess, onBack }: AuthProps) {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const { error: googleError } = await dbService.signInWithGoogle();
+      if (googleError) throw googleError;
+      setSuccess(true);
+      setTimeout(() => onAuthSuccess(), 800);
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong during Google Login.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const inputClass = "w-full rounded-xl py-3 pl-10 pr-4 text-sm font-medium transition-all focus:outline-none focus:ring-2";
   const inputStyle = {
     background: "rgba(255,255,255,0.65)",
@@ -200,6 +215,45 @@ export default function Auth({ onAuthSuccess, onBack }: AuthProps) {
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
+            </button>
+
+            <div className="flex items-center my-1.5">
+              <div className="flex-1 h-px bg-slate-200/60" />
+              <span className="px-3 text-slate-400 text-xs font-bold uppercase tracking-wider">or</span>
+              <div className="flex-1 h-px bg-slate-200/60" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2.5 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+              style={{
+                background: "white",
+                color: "#1e1b4b",
+                border: "1px solid rgba(167,139,250,0.25)",
+                boxShadow: "0 4px 12px rgba(124,58,237,0.04)"
+              }}
+            >
+              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#EA4335"
+                  d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.67 1.58 14.98 1 12 1 7.35 1 3.37 3.65 1.42 7.5l3.85 2.99C6.2 7.53 8.88 5.04 12 5.04z"
+                />
+                <path
+                  fill="#4285F4"
+                  d="M23.49 12.27c0-.81-.07-1.59-.2-2.34H12v4.43h6.47c-.28 1.48-1.12 2.74-2.38 3.58l3.69 2.87c2.16-1.99 3.4-4.92 3.4-8.54z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.27 14.49c-.25-.74-.39-1.53-.39-2.34s.14-1.6.39-2.34L1.42 6.82C.6 8.46.14 10.18.14 12s.46 3.54 1.28 5.18l3.85-2.69z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c3.24 0 5.97-1.08 7.96-2.92l-3.69-2.87c-1.02.68-2.33 1.09-3.95 1.09-3.12 0-5.8-2.49-6.73-5.45L1.74 15.54C3.69 19.39 7.68 23 12 23z"
+                />
+              </svg>
+              Continue with Google
             </button>
           </form>
         )}

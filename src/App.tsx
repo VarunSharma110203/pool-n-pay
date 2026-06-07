@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Home, Map, Users, Compass, User } from "lucide-react";
 import Auth from "./components/Auth";
+import { UpiOnboarding } from "./components/UpiOnboarding";
 import { LandingPage } from "./components/LandingPage";
 import { SplashScreen } from "./components/SplashScreen";
 import { Onboarding } from "./components/Onboarding";
@@ -254,6 +255,17 @@ export default function App() {
     return <Auth onAuthSuccess={checkAuth} onBack={() => setShowAuthScreen(false)} />;
   }
 
+  // Guard for missing UPI ID (e.g. Google Login new users)
+  if (profile && !profile.upi_id) {
+    return (
+      <UpiOnboarding
+        profile={profile}
+        onComplete={checkAuth}
+        onLogout={handleLogout}
+      />
+    );
+  }
+
   if (showSplash && !splashDone) {
     return <SplashScreen onComplete={handleSplashComplete} />;
   }
@@ -332,12 +344,12 @@ export default function App() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl gradient-sunset flex items-center justify-center flex-shrink-0 shadow-md">
                 <span className="text-white font-black text-base">
-                  {(profile.full_name || profile.email || "U")[0].toUpperCase()}
+                  {(profile.name || profile.full_name || profile.email || "U")[0].toUpperCase()}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-sm leading-tight truncate">
-                  {profile.full_name || "Traveler"}
+                  {profile.name || profile.full_name || "Traveler"}
                 </p>
                 {profile.upi_id && (
                   <p className="text-white/45 text-[11px] font-medium truncate mt-0.5">
