@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { X, Download, Share, ArrowUpFromLine } from "lucide-react";
+import { X, Download, Share } from "lucide-react";
 
 interface PwaInstallBannerProps {
-  /** Where it's placed — slight style variation */
   page?: "dashboard" | "profile";
 }
 
@@ -10,46 +9,49 @@ export function PwaInstallBanner({ page = "dashboard" }: PwaInstallBannerProps) 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [showBanner, setShowBanner] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [installing, setInstalling] = useState(false);
   const [installed, setInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if already running as an installed standalone app
+    // Already running as installed PWA?
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
+    if (standalone) return;
 
-    // Detect iOS (Safari) — no beforeinstallprompt support
+    // iOS detection
     const ua = window.navigator.userAgent;
-    const ios = /iphone|ipad|ipod/i.test(ua);
+    const ios = /iphone|ipad|ipod/i.test(ua) && !(window as any).MSStream;
     setIsIOS(ios);
 
-    // Already dismissed this session?
-    const dismissed = sessionStorage.getItem("pnp_pwa_dismissed");
-    if (dismissed) return;
-
-    if (standalone) return; // Already installed, no need to show banner
-
-    if (ios) {
-      // Show iOS manual install guide after a short delay
-      const t = setTimeout(() => setShowBanner(true), 2000);
-      return () => clearTimeout(t);
+    // Check if already dismissed permanently
+    const wasDismissed = localStorage.getItem("pnp_pwa_dismissed");
+    if (wasDismissed) {
+      setDismissed(true);
+      return;
     }
 
-    // Android / Desktop — listen for browser's native install event
+    // For Android/Desktop: pick up the globally captured prompt from main.tsx
+    // (beforeinstallprompt fires before React mounts, so we stored it on window)
+    const checkPrompt = () => {
+      const captured = (window as any).__pwaInstallPrompt;
+      if (captured) setDeferredPrompt(captured);
+    };
+    checkPrompt();
+
+    // Also listen in case it fires after mount (rare but possible)
     const handler = (e: Event) => {
       e.preventDefault();
+      (window as any).__pwaInstallPrompt = e;
       setDeferredPrompt(e);
-      setTimeout(() => setShowBanner(true), 2000);
     };
     window.addEventListener("beforeinstallprompt", handler);
 
-    // Listen for successful app installation
     window.addEventListener("appinstalled", () => {
       setInstalled(true);
-      setShowBanner(false);
+      (window as any).__pwaInstallPrompt = null;
     });
 
     return () => window.removeEventListener("beforeinstallprompt", handler);
@@ -63,110 +65,106 @@ export function PwaInstallBanner({ page = "dashboard" }: PwaInstallBannerProps) 
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") {
         setInstalled(true);
-        setShowBanner(false);
+        (window as any).__pwaInstallPrompt = null;
+        setDeferredPrompt(null);
       }
     } finally {
       setInstalling(false);
-      setDeferredPrompt(null);
     }
   };
 
   const handleDismiss = () => {
-    setShowBanner(false);
-    sessionStorage.setItem("pnp_pwa_dismissed", "1");
+    setDismissed(true);
+    localStorage.setItem("pnp_pwa_dismissed", "1");
   };
 
-  // Don't render if: already installed, already running standalone, or banner is hidden
-  if (isStandalone || installed || !showBanner) return null;
+  // Hide if: already installed, running standalone, or user dismissed
+  if (isStandalone || installed || dismissed) return null;
+
+  // On Android/Desktop — only show if we have the native prompt captured
+  if (!isIOS && !deferredPrompt) return null;
 
   const isProfile = page === "profile";
 
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl border shadow-lg animate-slide-up ${
-        isProfile
-          ? "mx-0 mt-0"
-          : "mx-4 mt-4"
-      }`}
+      className={`relative overflow-hidden rounded-3xl animate-slide-up ${isProfile ? "" : "mx-4 mt-4"}`}
       style={{
-        background: "linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(167,139,250,0.08) 100%)",
-        border: "1px solid rgba(124,58,237,0.2)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
+        background: "linear-gradient(135deg, rgba(124,58,237,0.10) 0%, rgba(167,139,250,0.06) 100%)",
+        border: "1px solid rgba(124,58,237,0.18)",
       }}
     >
-      {/* Decorative glow */}
-      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-violet-400/20 blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-indigo-400/15 blur-2xl pointer-events-none" />
+      {/* Decorative glow blobs */}
+      <div className="absolute -top-5 -right-5 w-20 h-20 rounded-full bg-violet-300/20 blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-3 -left-3 w-16 h-16 rounded-full bg-indigo-300/15 blur-xl pointer-events-none" />
 
       <div className="relative p-4">
-        {/* Dismiss */}
+        {/* Dismiss button */}
         <button
           onClick={handleDismiss}
-          className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center transition-all hover:bg-violet-100 active:scale-90"
+          className="absolute top-3 right-3 w-7 h-7 rounded-full flex items-center justify-center hover:bg-violet-100 active:scale-90 transition-all"
           style={{ color: "#7c3aed" }}
-          aria-label="Dismiss"
+          aria-label="Dismiss install banner"
         >
-          <X size={14} />
+          <X size={13} />
         </button>
 
-        <div className="flex items-start gap-3 pr-6">
-          {/* App icon */}
+        {/* Header row */}
+        <div className="flex items-center gap-3 pr-7">
           <div
-            className="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center shadow-md"
+            className="flex-shrink-0 w-11 h-11 rounded-2xl flex items-center justify-center shadow-md"
             style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}
           >
-            <span style={{ fontSize: 22 }}>🌴</span>
+            <span style={{ fontSize: 20 }}>🌴</span>
           </div>
-
-          <div className="flex-1 min-w-0">
-            <p className="font-black text-sm leading-tight" style={{ color: "#1e1b4b" }}>
+          <div>
+            <p className="font-black text-sm" style={{ color: "#1e1b4b" }}>
               Install Pool-n-Pay
             </p>
-            <p className="text-xs font-medium mt-0.5" style={{ color: "#7c3aed" }}>
-              Add to your home screen — free, no App Store needed
+            <p className="text-xs font-medium" style={{ color: "#7c3aed" }}>
+              Add to Home Screen — free, no App Store
             </p>
           </div>
         </div>
 
-        {/* iOS Instructions */}
+        {/* iOS: step-by-step guide */}
         {isIOS ? (
-          <div className="mt-3 space-y-2">
-            <p className="text-xs font-semibold" style={{ color: "#6d28d9" }}>
-              To install on iPhone / iPad:
+          <div className="mt-3 rounded-2xl p-3 space-y-2" style={{ background: "rgba(124,58,237,0.06)" }}>
+            <p className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "#6d28d9" }}>
+              How to install on iPhone / iPad
             </p>
-            <div className="flex flex-col gap-1.5">
-              {[
-                { icon: <Share size={13} />, text: "Tap the Share icon in Safari's toolbar" },
-                { icon: <ArrowUpFromLine size={13} />, text: "Scroll down and tap \"Add to Home Screen\"" },
-                { icon: <span style={{ fontSize: 13 }}>✅</span>, text: "Tap \"Add\" to install the app" },
-              ].map((step, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div
-                    className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: "rgba(124,58,237,0.12)", color: "#7c3aed" }}
-                  >
-                    {step.icon}
-                  </div>
-                  <span className="text-xs font-medium" style={{ color: "#4c1d95" }}>
-                    {step.text}
-                  </span>
-                </div>
-              ))}
+            {[
+              { emoji: "1️⃣", text: "Open this page in Safari (not Chrome)" },
+              { emoji: "2️⃣", text: "Tap the Share icon  at the bottom" },
+              { emoji: "3️⃣", text: "Scroll & tap \"Add to Home Screen\"" },
+              { emoji: "✅", text: "Tap \"Add\" — done!" },
+            ].map((step, i) => (
+              <div key={i} className="flex items-center gap-2.5">
+                <span className="text-base leading-none">{step.emoji}</span>
+                <span className="text-xs font-semibold" style={{ color: "#4c1d95" }}>
+                  {step.text}
+                </span>
+              </div>
+            ))}
+            <div className="flex items-center gap-1.5 pt-1">
+              <Share size={11} style={{ color: "#7c3aed" }} />
+              <span className="text-[10px] font-bold" style={{ color: "#7c3aed" }}>
+                Safari → Share → Add to Home Screen
+              </span>
             </div>
           </div>
         ) : (
-          /* Android / Desktop: One-tap install button */
+          /* Android / Desktop: one-tap install */
           <button
             onClick={handleInstall}
-            disabled={installing || !deferredPrompt}
-            className="mt-3 w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
+            disabled={installing}
+            className="mt-3 w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 font-bold text-sm text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
             style={{
               background: "linear-gradient(135deg,#7c3aed,#a78bfa)",
-              boxShadow: "0 4px 16px rgba(124,58,237,0.35)",
+              boxShadow: "0 4px 14px rgba(124,58,237,0.30)",
             }}
           >
-            <Download size={15} />
+            <Download size={14} />
             {installing ? "Installing…" : "Install App — It's Free!"}
           </button>
         )}
