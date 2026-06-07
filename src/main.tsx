@@ -10,7 +10,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
   (window as any).__pwaInstallPrompt = e;
 });
 
-createRoot(document.getElementById('root')!).render(
+const rootEl = document.getElementById('root')!;
+rootEl.style.maxWidth = '100vw';
+rootEl.style.overflowX = 'hidden';
+
+createRoot(rootEl).render(
   <StrictMode>
     <App />
   </StrictMode>,
