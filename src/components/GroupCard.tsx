@@ -28,31 +28,21 @@ const GroupCard: React.FC<GroupCardProps> = ({ id: _id, name, mode, members, bal
     ? Math.min(100, (poolNum / target_amount) * 100)
     : 0;
 
-  // Badge styles
-  const badgeStyle = isSplit
-    ? { background: "#ede9fe", color: "#7c3aed", border: "1px solid rgba(167,139,250,0.3)" }
-    : { background: "#d1fae5", color: "#059669", border: "1px solid rgba(110,231,183,0.3)" };
+  // Badge class
+  const badgeClass = isSplit ? "badge-violet" : "badge-mint";
 
   // Balance color
-  const balanceColor = isPositive ? "#059669" : isNegative ? "#e11d48" : "#7c3aed";
+  const balanceColor = isPositive ? "#34d399" : isNegative ? "#f43f5e" : "#a78bfa";
 
   return (
     <div
       onClick={onClick}
-      className="card-hover flex items-stretch gap-4 p-4"
-      style={{
-        background: "rgba(255,255,255,0.75)",
-        border: "1px solid rgba(255,255,255,0.9)",
-        backdropFilter: "blur(12px)",
-        boxShadow: "0 2px 16px rgba(124,58,237,0.07)",
-        borderRadius: "20px",
-        cursor: onClick ? "pointer" : "default",
-      }}
+      className="card card-hover flex items-stretch gap-4 p-4 cursor-pointer"
     >
       {/* Emoji circle */}
       <div
         className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl select-none"
-        style={{ background: isSplit ? "rgba(237,233,254,0.7)" : "rgba(209,250,229,0.7)" }}
+        style={{ background: isSplit ? "rgba(124, 58, 237, 0.15)" : "rgba(16, 185, 129, 0.15)" }}
       >
         {emoji}
       </div>
@@ -61,17 +51,16 @@ const GroupCard: React.FC<GroupCardProps> = ({ id: _id, name, mode, members, bal
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5">
         {/* Name + badge */}
         <div className="flex items-center gap-2">
-          <span className="font-bold text-sm truncate" style={{ color: "#1e1b4b" }}>{name}</span>
+          <span className="font-bold text-sm truncate text-white">{name}</span>
           <span
-            className="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={badgeStyle}
+            className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeClass}`}
           >
             {isSplit ? "Split" : "Pool"}
           </span>
         </div>
 
         {/* Members */}
-        <div className="flex items-center gap-1" style={{ color: "#94a3b8" }}>
+        <div className="flex items-center gap-1 text-slate-400">
           <Users className="w-3 h-3" />
           <span className="text-xs">{memberCount} {memberCount === 1 ? "member" : "members"}</span>
         </div>
@@ -79,16 +68,16 @@ const GroupCard: React.FC<GroupCardProps> = ({ id: _id, name, mode, members, bal
         {/* Pool progress bar */}
         {!isSplit && target_amount && target_amount > 0 && (
           <div className="space-y-1">
-            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-700"
                 style={{
                   width: `${progressPercent}%`,
-                  background: "linear-gradient(90deg,#7c3aed,#a78bfa)",
+                  background: "linear-gradient(90deg,#7c3aed,#f97316)",
                 }}
               />
             </div>
-            <span className="text-[10px] font-medium" style={{ color: "#94a3b8" }}>
+            <span className="text-[10px] font-medium text-slate-400">
               {progressPercent.toFixed(0)}% of ₹{target_amount.toLocaleString()}
             </span>
           </div>
@@ -101,7 +90,7 @@ const GroupCard: React.FC<GroupCardProps> = ({ id: _id, name, mode, members, bal
           <span className="money text-sm font-bold" style={{ color: balanceColor }}>
             {balanceStr}
           </span>
-          <span className="text-[10px] font-medium" style={{ color: "#94a3b8" }}>
+          <span className="text-[10px] font-medium text-slate-400">
             {isSplit ? (isPositive ? "owed to you" : isNegative ? "you owe" : "") : "contributed"}
           </span>
         </div>

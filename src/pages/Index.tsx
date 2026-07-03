@@ -488,10 +488,10 @@ export default function Index({ profile, onNavigate }: Props) {
       <div className="mx-4 mt-6">
         {/* Section header */}
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold font-bold" style={{ color: "#1e1b4b" }}>Recent Activity</h2>
+          <h2 className="text-lg font-bold text-white">Recent Activity</h2>
           <button
             onClick={() => loadAll(true)}
-            className={`w-8 h-8 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center text-slate-400 hover:bg-gray-50 transition-colors cursor-pointer ${
+            className={`w-8 h-8 rounded-full card flex items-center justify-center text-slate-400 hover:bg-white/5 transition-colors cursor-pointer ${
               refreshing ? "animate-spin" : ""
             }`}
             aria-label="Refresh activity"
@@ -506,7 +506,7 @@ export default function Index({ profile, onNavigate }: Props) {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="rounded-2xl h-16 animate-pulse" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.8)" }}
+                className="card h-16 animate-pulse"
               />
             ))}
           </div>
@@ -520,11 +520,11 @@ export default function Index({ profile, onNavigate }: Props) {
           </div>
         ) : (
           /* Activity feed */
-          <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.80)", border: "1px solid rgba(255,255,255,0.9)", backdropFilter: "blur(12px)" }}>
+          <div className="card rounded-2xl overflow-hidden">
             {activities.map((activity, idx) => (
               <div
                 key={activity.id}
-                className={idx < activities.length - 1 ? "border-b border-gray-50" : ""}
+                className={idx < activities.length - 1 ? "border-b border-white/5" : ""}
               >
                 <ActivityItem
                   avatar={activity.avatar}
@@ -545,17 +545,17 @@ export default function Index({ profile, onNavigate }: Props) {
       {/* ─────────────────────────────────────────────────────────────── */}
       {showSettleDialog && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-scale-in" style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(255,255,255,0.95)", backdropFilter: "blur(20px)" }}>
+          <div className="card rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-scale-in">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="text-base font-extrabold text-slate-900">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <h3 className="text-base font-extrabold text-white">
                 Settle up with {showSettleDialog.name}
               </h3>
               <button
                 onClick={() => setShowSettleDialog(null)}
-                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4 text-slate-500" />
+                <X className="w-4 h-4 text-slate-400" />
               </button>
             </div>
 
@@ -585,8 +585,8 @@ export default function Index({ profile, onNavigate }: Props) {
               <div
                 className={`px-6 py-3 rounded-2xl font-mono font-black text-2xl shadow-inner ${
                   showSettleDialog.positive === true
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "bg-rose-50 text-rose-500"
+                    ? "bg-emerald-500/10 text-emerald-400"
+                    : "bg-rose-500/10 text-rose-400"
                 }`}
               >
                 {fmt(showSettleDialog.amount)}
@@ -614,7 +614,7 @@ export default function Index({ profile, onNavigate }: Props) {
                     });
                     setShowSettleDialog(null);
                   }}
-                  className="w-full text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}
+                  className="w-full text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#7c3aed,#f97316)" }}
                 >
                   <QrCode className="w-4 h-4" />
                   Pay via UPI QR
@@ -632,7 +632,7 @@ export default function Index({ profile, onNavigate }: Props) {
                       showSettleDialog.amount
                     );
                   }}
-                  className="w-full bg-white border border-gray-200 text-slate-700 font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="w-full bg-white/5 border border-white/10 text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   Record Cash Payment
                 </button>
@@ -647,7 +647,7 @@ export default function Index({ profile, onNavigate }: Props) {
                       showSettleDialog.amount
                     );
                   }}
-                  className="w-full text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}
+                  className="w-full text-white font-bold text-sm py-3 rounded-2xl flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#7c3aed,#f97316)" }}
                 >
                   Record Cash Received
                 </button>
@@ -662,17 +662,17 @@ export default function Index({ profile, onNavigate }: Props) {
       {/* ─────────────────────────────────────────────────────────────── */}
       {activeQrData && (
         <div className="fixed inset-0 bg-black/55 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-scale-in" style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(255,255,255,0.95)", backdropFilter: "blur(20px)" }}>
+          <div className="card rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 animate-scale-in">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-extrabold text-slate-900">
+              <h3 className="text-base font-extrabold text-white">
                 Scan to Pay 🔍
               </h3>
               <button
                 onClick={() => setActiveQrData(null)}
-                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4 text-slate-500" />
+                <X className="w-4 h-4 text-slate-400" />
               </button>
             </div>
 
@@ -694,7 +694,7 @@ export default function Index({ profile, onNavigate }: Props) {
                 onChange={(e) =>
                   setActiveQrData({ ...activeQrData, upiId: e.target.value })
                 }
-                className="rounded-xl px-3 py-2.5 w-full text-xs font-mono focus:outline-none transition-all" style={{ background: "rgba(237,233,254,0.4)", border: "1px solid rgba(167,139,250,0.25)", color: "#1e1b4b" }}
+                className="rounded-xl px-3 py-2.5 w-full text-xs font-mono focus:outline-none transition-all text-white bg-white/5" style={{ border: "1px solid rgba(255,255,255,0.08)" }}
               />
               <p className="text-[10px] text-slate-400">
                 ✏️ Edit to test with a real UPI handle
@@ -723,7 +723,7 @@ export default function Index({ profile, onNavigate }: Props) {
             </div>
 
             {/* Tip box */}
-            <p className="text-[10px] p-3 rounded-xl text-center leading-relaxed font-medium" style={{ background: "#ede9fe", color: "#7c3aed", border: "1px solid rgba(167,139,250,0.3)" }}>
+            <p className="text-[10px] p-3 rounded-xl text-center leading-relaxed font-medium badge-violet">
               💡 Open any UPI app (GPay, PhonePe, Paytm) and scan this QR to
               pay instantly.
             </p>
@@ -738,13 +738,13 @@ export default function Index({ profile, onNavigate }: Props) {
                     activeQrData.amount
                   )
                 }
-                className="flex-1 text-white font-semibold text-xs py-3 rounded-xl hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#059669,#34d399)" }}
+                className="flex-1 text-white font-semibold text-xs py-3 rounded-xl hover:brightness-110 active:scale-95 transition-all cursor-pointer shadow-sm" style={{ background: "linear-gradient(135deg,#10b981,#34d399)" }}
               >
                 I've Paid! ✓
               </button>
               <button
                 onClick={() => setActiveQrData(null)}
-                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs py-3 rounded-xl transition-colors cursor-pointer"
+                className="flex-1 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs py-3 rounded-xl transition-colors cursor-pointer border border-white/5"
               >
                 Close
               </button>

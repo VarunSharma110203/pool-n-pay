@@ -9,10 +9,10 @@ interface QuickActionProps {
 }
 
 const colorMap = {
-  teal:    { iconBg: "#ede9fe", iconColor: "#7c3aed" },
-  emerald: { iconBg: "#d1fae5", iconColor: "#059669" },
-  rose:    { iconBg: "#ffe4e6", iconColor: "#e11d48" },
-  orange:  { iconBg: "#fef3c7", iconColor: "#d97706" },
+  teal:    { iconBg: "rgba(124, 58, 237, 0.15)", iconColor: "#a78bfa" },
+  emerald: { iconBg: "rgba(16, 185, 129, 0.15)", iconColor: "#34d399" },
+  rose:    { iconBg: "rgba(244, 63, 94, 0.15)", iconColor: "#fb7185" },
+  orange:  { iconBg: "rgba(249, 115, 22, 0.15)", iconColor: "#f97316" },
 };
 
 const QuickAction: React.FC<QuickActionProps> = ({ icon: Icon, label, color, onClick }) => {
@@ -20,13 +20,7 @@ const QuickAction: React.FC<QuickActionProps> = ({ icon: Icon, label, color, onC
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-2.5 p-3.5 rounded-2xl hover:scale-105 hover:shadow-md active:scale-95 transition-all duration-150 cursor-pointer group w-full btn-ripple"
-      style={{
-        background: "rgba(255,255,255,0.75)",
-        border: "1px solid rgba(255,255,255,0.9)",
-        backdropFilter: "blur(12px)",
-        boxShadow: "0 2px 12px rgba(124,58,237,0.07)",
-      }}
+      className="card card-hover flex flex-col items-center gap-2.5 p-3.5 hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer group w-full btn-ripple"
     >
       <div
         className="w-11 h-11 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
@@ -34,7 +28,7 @@ const QuickAction: React.FC<QuickActionProps> = ({ icon: Icon, label, color, onC
       >
         <Icon className="w-5 h-5" style={{ color: c.iconColor }} />
       </div>
-      <span className="text-[11px] font-bold leading-tight text-center" style={{ color: "#1e1b4b" }}>
+      <span className="text-[11px] font-bold leading-tight text-center text-white">
         {label}
       </span>
     </button>

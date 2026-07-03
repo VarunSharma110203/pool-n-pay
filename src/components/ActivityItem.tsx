@@ -15,9 +15,9 @@ function isEmoji(str: string): boolean {
 }
 
 const typeConfig = {
-  expense: { dot: "#fda4af", amountColor: "#e11d48", bg: "#ffe4e6", label: "Expense" },
-  payment: { dot: "#6ee7b7", amountColor: "#059669", bg: "#d1fae5", label: "Payment" },
-  pool:    { dot: "#a78bfa", amountColor: "#7c3aed", bg: "#ede9fe", label: "Pool" },
+  expense: { dot: "#fb7185", amountColor: "#f43f5e", bg: "rgba(244, 63, 94, 0.15)", label: "Expense" },
+  payment: { dot: "#34d399", amountColor: "#10b981", bg: "rgba(16, 185, 129, 0.15)", label: "Payment" },
+  pool:    { dot: "#c084fc", amountColor: "#a78bfa", bg: "rgba(124, 58, 237, 0.15)", label: "Pool" },
 };
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ avatar, name, action, amount, type, created_at }) => {
@@ -27,9 +27,9 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ avatar, name, action, amoun
 
   return (
     <div
-      className="flex items-center gap-3 px-4 py-3.5 transition-colors group"
+      className="flex items-center gap-3 px-4 py-3.5 transition-colors group cursor-default"
       style={{ borderRadius: "12px" }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(245,243,255,0.5)"; }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255, 255, 255, 0.05)"; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
     >
       {/* Avatar */}
@@ -38,8 +38,8 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ avatar, name, action, amoun
           className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden"
           style={
             isEmojiAvatar
-              ? { background: "rgba(237,233,254,0.6)" }
-              : { background: "linear-gradient(135deg,#7c3aed,#a78bfa)", color: "#fff" }
+              ? { background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.08)" }
+              : { background: "linear-gradient(135deg,#7c3aed,#f97316)", color: "#fff" }
           }
         >
           {isEmojiAvatar
@@ -48,19 +48,19 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ avatar, name, action, amoun
         </div>
         {/* Type dot */}
         <span
-          className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white"
+          className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[#120f26]"
           style={{ background: config.dot }}
         />
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm leading-snug" style={{ color: "#1e1b4b" }}>
+        <p className="text-sm leading-snug text-white">
           <span className="font-bold">{name}</span>{" "}
-          <span style={{ color: "#64748b" }}>{action}</span>
+          <span className="text-slate-400">{action}</span>
         </p>
         <div className="flex items-center gap-2 mt-0.5">
-          <span className="text-[11px] font-medium" style={{ color: "#94a3b8" }}>{timestamp}</span>
+          <span className="text-[11px] font-medium text-slate-400">{timestamp}</span>
           <span
             className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
             style={{ background: config.bg, color: config.amountColor }}
