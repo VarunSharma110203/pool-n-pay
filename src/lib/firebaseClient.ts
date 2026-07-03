@@ -101,25 +101,60 @@ export const dbService = {
       const provider = new GoogleAuthProvider();
       const res = await signInWithPopup(auth, provider);
       
-      const docRef = doc(db, "profiles", res.user.uid);
-      const snap = await getDoc(docRef);
+      // Wait 300ms for Firebase Auth token to propagate to Firestore client
+      await new Promise((resolve) => setTimeout(resolve, 300));
       
-      if (!snap.exists()) {
+      const docRef = doc(db, "profiles", res.user.uid);
+      let exists = false;
+      let snap = null;
+      let attempts = 0;
+      
+      while (attempts < 3) {
+        try {
+          snap = await getDoc(docRef);
+          exists = snap.exists();
+          break; // success, read was allowed
+        } catch (err: any) {
+          attempts++;
+          if (attempts >= 3) {
+            // If it keeps throwing permission error, it might be the strict rule on non-existent documents.
+            // We assume it does not exist and attempt to create it.
+            console.warn("getDoc failed after retries, assuming profile needs to be created:", err);
+            exists = false;
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+      
+      if (!exists) {
         const name = res.user.displayName || "";
         const initials = name ? name.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) : "U";
         const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-        await setDoc(docRef, {
-          name: name.trim(),
-          upi_id: "", // Blank indicates they need to enter a UPI ID
-          avatar: initials,
-          invite_code: code
-        });
+        
+        attempts = 0;
+        while (attempts < 3) {
+          try {
+            await setDoc(docRef, {
+              name: name.trim() || "Google Traveler",
+              upi_id: "", // Blank indicates they need to enter a UPI ID
+              avatar: initials,
+              invite_code: code
+            });
+            break; // success
+          } catch (err: any) {
+            attempts++;
+            if (attempts >= 3) throw err;
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        }
         localStorage.setItem("pnp_invite_code", code);
       }
       
       window.dispatchEvent(new Event("pool_n_pay_auth_change"));
       return { error: null };
     } catch (error: any) {
+      console.error("signInWithGoogle final error:", error);
       return { error };
     }
   },
