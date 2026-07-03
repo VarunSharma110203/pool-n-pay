@@ -188,7 +188,7 @@ export default function Trips({ profile }: Props) {
   const totalNet = Object.values(groupBalances).filter((_, i) => groups[i]?.mode === "split").reduce((s, v) => s + v, 0);
 
   return (
-    <div className="min-h-screen pb-28" style={{ background: "#f4f7f6" }}>
+    <div className="min-h-screen pb-28">
       <div className="max-w-5xl mx-auto">
       {/* Header Hero */}
       <div className="gradient-tropical px-5 pt-14 pb-10 relative overflow-hidden">
@@ -326,7 +326,7 @@ export default function Trips({ profile }: Props) {
       {/* Create Group Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center">
-          <div className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl animate-slide-up">
+          <div className="card w-full max-w-lg rounded-t-3xl shadow-2xl animate-slide-up">
             {/* Handle bar */}
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 rounded-full bg-gray-200" />
@@ -469,7 +469,7 @@ export default function Trips({ profile }: Props) {
       {/* Join Group Modal */}
       {showJoinModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 animate-scale-in">
+          <div className="card w-full max-w-md rounded-3xl shadow-2xl p-6 animate-scale-in">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-black text-slate-900 text-lg">Join Trip Group ✈️</h2>
               <button 

@@ -225,21 +225,21 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg,#f5f3ff 0%,#ede9fe 35%,#dbeafe 70%,#e0f2fe 100%)" }}>
+      <div className="min-h-screen flex items-center justify-center gradient-page">
         <div className="flex flex-col items-center gap-5">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-xl animate-float" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}>
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-xl animate-float" style={{ background: "linear-gradient(135deg,#7c3aed,#f97316)" }}>
             <span style={{ fontSize: "36px" }}>🌴</span>
           </div>
           <div className="text-center space-y-1">
-            <p className="font-black text-xl tracking-tight" style={{ color: "#1e1b4b" }}>Pool-n-Pay</p>
-            <p className="font-semibold text-sm" style={{ color: "#7c3aed" }}>Getting things ready…</p>
+            <p className="font-black text-xl tracking-tight text-white">Pool-n-Pay</p>
+            <p className="font-semibold text-sm text-violet-300">Getting things ready…</p>
           </div>
           <div className="flex gap-1.5">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
                 className="w-2 h-2 rounded-full animate-bounce"
-                style={{ background: "#a78bfa", animationDelay: `${i * 150}ms` }}
+                style={{ background: "#f97316", animationDelay: `${i * 150}ms` }}
               />
             ))}
           </div>
@@ -273,12 +273,12 @@ export default function App() {
   // ─── Main Layout ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#f4f7f6" }}>
+    <div className="min-h-screen flex gradient-page">
 
       {/* ═══════════════════════════════════════════════════════════════════════
           DESKTOP SIDEBAR
       ════════════════════════════════════════════════════════════════════════ */}
-      <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-72 z-20 overflow-hidden" style={{ background: "linear-gradient(160deg,#1e1b4b 0%,#2d2a6e 55%,#3730a3 100%)" }}>
+      <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-72 z-20 overflow-hidden gradient-jungle">
 
         {/* Decorative blobs */}
         <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5 pointer-events-none" />
@@ -379,16 +379,16 @@ export default function App() {
         )}
 
         {/* 5. Main App Dashboard */}
-        <header className="hidden md:flex items-center justify-between px-8 py-4 bg-white/70 backdrop-blur-md border-b border-gray-100/80 sticky top-0 z-10">
+        <header className="hidden md:flex items-center justify-between px-8 py-4 bg-transparent border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
           <div>
-            <h1 className="text-slate-800 font-black text-xl tracking-tight">{pageTitle}</h1>
+            <h1 className="text-white font-black text-xl tracking-tight">{pageTitle}</h1>
             <p className="text-slate-400 text-xs font-medium mt-0.5">
               {activeTab === "explore" ? (exploreTab === "travel" ? "Search flights & stays" : "AI-powered trip planning") : "Pool-n-Pay"}
             </p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: "rgba(237,233,254,0.7)", border: "1px solid rgba(167,139,250,0.3)" }}>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full glass" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#a78bfa" }} />
-            <span className="text-xs font-bold" style={{ color: "#7c3aed" }}>Connected</span>
+            <span className="text-xs font-bold text-violet-300">Connected</span>
           </div>
         </header>
 
@@ -405,8 +405,8 @@ export default function App() {
       {/* ═══════════════════════════════════════════════════════════════════════
           MOBILE BOTTOM NAV
       ════════════════════════════════════════════════════════════════════════ */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 backdrop-blur-xl z-30" style={{ background: "rgba(245,243,255,0.95)", borderTop: "1px solid rgba(167,139,250,0.2)", boxShadow: "0 -4px 20px rgba(124,58,237,0.08)" }}>
-        <div className="flex justify-around items-center py-2 px-1 safe-area-bottom">
+      <nav className="md:hidden fixed bottom-4 left-4 right-4 backdrop-blur-xl z-30 rounded-3xl" style={{ background: "rgba(15, 12, 33, 0.8)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)" }}>
+        <div className="flex justify-around items-center py-2.5 px-1 safe-area-bottom">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
             const isActive = activeTab === id;
             return (
@@ -420,18 +420,18 @@ export default function App() {
                   className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 ${
                     isActive ? "scale-110" : "bg-transparent"
                   }`}
-                  style={isActive ? { background: "rgba(237,233,254,0.8)" } : {}}
+                  style={isActive ? { background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.06)" } : {}}
                 >
                   <Icon
                     size={18}
                     className="transition-colors duration-200"
-                    style={{ color: isActive ? "#7c3aed" : "#94a3b8" }}
+                    style={{ color: isActive ? "#a78bfa" : "#64748b" }}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
 
                   {/* Friends pending badge */}
                   {id === "friends" && pendingCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black shadow-sm">
+                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-black shadow-md">
                       {pendingCount > 9 ? "9+" : pendingCount}
                     </span>
                   )}
@@ -440,7 +440,7 @@ export default function App() {
                 {/* Label */}
                 <span
                   className="text-[10px] font-bold transition-colors duration-200"
-                  style={{ color: isActive ? "#7c3aed" : "#94a3b8" }}
+                  style={{ color: isActive ? "#a78bfa" : "#64748b" }}
                 >
                   {label}
                 </span>

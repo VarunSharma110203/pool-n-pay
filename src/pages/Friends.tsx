@@ -222,7 +222,7 @@ export default function Friends({ profile }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div className="min-h-screen pb-28">
       <div className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="gradient-tropical px-5 pt-12 pb-8">
@@ -241,7 +241,7 @@ export default function Friends({ profile }: Props) {
 
       <div className="px-4 -mt-4 space-y-4">
         {/* Invite Card */}
-        <div className="bg-white rounded-3xl shadow-md border border-teal-100 p-5 animate-fade-in">
+        <div className="card rounded-3xl p-5 animate-fade-in">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-teal-50 rounded-xl flex items-center justify-center">
               <Share2 className="w-4 h-4 text-teal-600" />
@@ -309,8 +309,8 @@ export default function Friends({ profile }: Props) {
         </div>
 
         {/* Search & Add */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 animate-fade-in delay-100">
-          <h2 className="font-bold text-slate-900 text-base mb-3">Add Friend by Code</h2>
+        <div className="card rounded-3xl p-5 animate-fade-in delay-100">
+          <h2 className="font-bold text-white text-base mb-3">Add Friend by Code</h2>
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -318,7 +318,7 @@ export default function Friends({ profile }: Props) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Enter Friend's Invite Code (e.g. ABC123)"
-              className="bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-semibold uppercase tracking-wider"
+              className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-semibold uppercase tracking-wider text-white"
             />
             {searchQuery && (
               <button
@@ -335,7 +335,7 @@ export default function Friends({ profile }: Props) {
               {searchResults.map((user) => (
                 <div
                   key={user.name}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 hover:bg-teal-50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5"
                 >
                   <div className="w-10 h-10 rounded-full gradient-lagoon flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                     {user.avatar.length <= 2 ? user.avatar : getInitials(user.name)}
@@ -382,7 +382,7 @@ export default function Friends({ profile }: Props) {
               {pendingReceived.map((req) => (
                 <div
                   key={req.id}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-orange-50 border border-orange-100"
+                  className="flex items-center gap-3 p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20"
                 >
                   <AvatarCircle name={req.name} size="sm" />
                   <div className="flex-1 min-w-0">
@@ -413,7 +413,7 @@ export default function Friends({ profile }: Props) {
         {/* Friends List */}
         <div className="animate-fade-in delay-200">
           <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="font-bold text-slate-900 text-lg">
+            <h2 className="font-bold text-white text-lg">
               Friends{" "}
               <span className="text-slate-400 font-normal text-base">({actualFriends.length})</span>
             </h2>
@@ -422,7 +422,7 @@ export default function Friends({ profile }: Props) {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 animate-pulse">
+                <div key={i} className="card rounded-2xl p-4 animate-pulse">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-full bg-gray-200" />
                     <div className="flex-1 space-y-2">
@@ -434,9 +434,9 @@ export default function Friends({ profile }: Props) {
               ))}
             </div>
           ) : actualFriends.length === 0 ? (
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-10 text-center">
+            <div className="card rounded-3xl p-10 text-center">
               <div className="text-5xl mb-3">🌊</div>
-              <p className="font-bold text-slate-800 text-lg">Your tribe is empty!</p>
+              <p className="font-bold text-white text-lg">Your tribe is empty!</p>
               <p className="text-slate-400 text-sm mt-1">Start by inviting friends above</p>
             </div>
           ) : (
@@ -447,7 +447,7 @@ export default function Friends({ profile }: Props) {
                   <div
                     key={friend.id}
                     onClick={() => handleFriendClick(friend.name)}
-                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-shadow cursor-pointer"
+                    className="card rounded-2xl p-4 flex items-center gap-3 hover:scale-[1.01] transition-all cursor-pointer"
                   >
                     <div className="w-12 h-12 rounded-full gradient-tropical flex items-center justify-center text-white font-bold text-base flex-shrink-0">
                       {getInitials(friend.name)}

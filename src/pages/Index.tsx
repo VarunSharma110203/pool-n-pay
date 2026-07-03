@@ -202,11 +202,11 @@ export default function Index({ profile, onNavigate }: Props) {
   // ─── Dashboard ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen pb-28" style={{ background: "linear-gradient(160deg,#f5f3ff 0%,#ede9fe 30%,#dbeafe 65%,#e0f2fe 100%)" }}>
+    <div className="min-h-screen pb-28">
       <div className="max-w-5xl mx-auto">
       {/* ── 1. HERO BALANCE CARD ─────────────────────────────────────── */}
       <div className="mx-4 mt-4">
-        <div className="rounded-3xl p-6 shadow-xl relative overflow-hidden" style={{ background: "linear-gradient(135deg,#7c3aed 0%,#9d5cf6 50%,#60a5fa 100%)", boxShadow: "0 12px 40px rgba(124,58,237,0.35)" }}>
+        <div className="rounded-3xl p-6 shadow-xl relative overflow-hidden" style={{ background: "linear-gradient(135deg,#7c3aed 0%,#a78bfa 50%,#f97316 100%)", boxShadow: "0 12px 40px rgba(249,115,22,0.18)" }}>
           {/* Decorative glows */}
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-12 -left-8 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none" />
@@ -323,15 +323,15 @@ export default function Index({ profile, onNavigate }: Props) {
       {/* ── 3. OUTSTANDING BALANCES ───────────────────────────────────── */}
       {nonNullBalances.length > 0 && (
         <div className="mx-4 mt-4">
-          <div className="rounded-3xl p-5" style={{ background: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.9)", backdropFilter: "blur(12px)" }}>
+          <div className="card rounded-3xl p-5">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-500" />
-                <span className="text-sm font-bold text-slate-900">
+                <span className="text-sm font-bold text-white">
                   Outstanding
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black" style={{ background: "#ede9fe", color: "#7c3aed" }}>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black badge-violet">
                   {nonNullBalances.length}
                 </span>
               </div>
@@ -435,14 +435,14 @@ export default function Index({ profile, onNavigate }: Props) {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-72 h-28 rounded-2xl animate-pulse" style={{ background: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.8)" }}
+                className="flex-shrink-0 w-72 h-28 rounded-2xl animate-pulse card"
               />
             ))}
           </div>
         ) : groups.length === 0 ? (
           /* Empty state */
           <div className="mx-4">
-            <div className="rounded-2xl p-8 text-center" style={{ background: "rgba(255,255,255,0.75)", border: "1px solid rgba(255,255,255,0.9)", backdropFilter: "blur(12px)" }}>
+            <div className="card rounded-2xl p-8 text-center">
               <div className="text-4xl mb-2">🏝️</div>
               <p className="font-bold text-slate-700 text-sm mb-1">
                 No adventures yet

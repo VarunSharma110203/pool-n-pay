@@ -42,37 +42,30 @@ export function UpiOnboarding({ profile, onComplete, onLogout }: UpiOnboardingPr
 
   const inputClass = "w-full rounded-xl py-3 pl-10 pr-4 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-violet-400";
   const inputStyle = {
-    background: "rgba(255,255,255,0.65)",
-    border: "1px solid rgba(167,139,250,0.25)",
-    color: "#1e1b4b",
+    background: "rgba(255, 255, 255, 0.04)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    color: "#f1f5f9",
   };
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 font-sans relative overflow-hidden w-full"
-      style={{ background: "linear-gradient(135deg,#f5f3ff 0%,#ede9fe 35%,#dbeafe 70%,#e0f2fe 100%)" }}
+      className="min-h-screen flex items-center justify-center p-4 font-sans relative overflow-hidden w-full gradient-page"
     >
       {/* Ambient blobs */}
-      <div className="blob w-80 h-80 bg-violet-300 top-[-5rem] left-[-5rem]" />
-      <div className="blob w-72 h-72 bg-sky-200 bottom-[-4rem] right-[-4rem]" />
-      <div className="blob w-56 h-56 bg-pink-200 top-1/3 right-0" />
+      <div className="blob w-80 h-80 bg-violet-600/30 top-[-5rem] left-[-5rem]" />
+      <div className="blob w-72 h-72 bg-orange-500/20 bottom-[-4rem] right-[-4rem]" />
+      <div className="blob w-56 h-56 bg-pink-500/20 top-1/3 right-0" />
 
       {/* Card */}
       <div
-        className="relative z-10 w-full max-w-md rounded-3xl p-8 animate-slide-up"
-        style={{
-          background: "rgba(255,255,255,0.70)",
-          border: "1px solid rgba(255,255,255,0.85)",
-          backdropFilter: "blur(24px)",
-          boxShadow: "0 16px 60px rgba(124,58,237,0.12)",
-        }}
+        className="relative z-10 w-full max-w-md rounded-3xl p-8 animate-slide-up card"
       >
         {/* Title */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ background: "linear-gradient(135deg,#7c3aed,#f97316)" }}>
             <span style={{ fontSize: "26px" }}>🌴</span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-center" style={{ color: "#1e1b4b" }}>Complete Your Profile</h1>
+          <h1 className="text-2xl font-black tracking-tight text-center text-white">Complete Your Profile</h1>
           <p className="text-sm font-medium mt-2 text-center" style={{ color: "#94a3b8" }}>
             Just one quick step to get started with splitting and pooling money!
           </p>

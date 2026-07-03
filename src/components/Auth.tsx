@@ -59,27 +59,26 @@ export default function Auth({ onAuthSuccess, onBack }: AuthProps) {
 
   const inputClass = "w-full rounded-xl py-3 pl-10 pr-4 text-sm font-medium transition-all focus:outline-none focus:ring-2";
   const inputStyle = {
-    background: "rgba(255,255,255,0.65)",
-    border: "1px solid rgba(167,139,250,0.25)",
-    color: "#1e1b4b",
+    background: "rgba(255, 255, 255, 0.04)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    color: "#f1f5f9",
   };
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 font-sans relative overflow-hidden"
-      style={{ background: "linear-gradient(135deg,#f5f3ff 0%,#ede9fe 35%,#dbeafe 70%,#e0f2fe 100%)" }}
+      className="min-h-screen flex items-center justify-center p-4 font-sans relative overflow-hidden gradient-page"
     >
       {/* Ambient blobs */}
-      <div className="blob w-80 h-80 bg-violet-300 top-[-5rem] left-[-5rem]" />
-      <div className="blob w-72 h-72 bg-sky-200 bottom-[-4rem] right-[-4rem]" />
-      <div className="blob w-56 h-56 bg-pink-200 top-1/3 right-0" />
+      <div className="blob w-80 h-80 bg-violet-600/30 top-[-5rem] left-[-5rem]" />
+      <div className="blob w-72 h-72 bg-orange-500/20 bottom-[-4rem] right-[-4rem]" />
+      <div className="blob w-56 h-56 bg-pink-500/20 top-1/3 right-0" />
 
       {/* Back button */}
       {onBack && (
         <button
           onClick={onBack}
-          className="absolute top-6 left-6 z-20 flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95"
-          style={{ background: "rgba(255,255,255,0.65)", color: "#7c3aed", border: "1px solid rgba(167,139,250,0.25)", backdropFilter: "blur(12px)" }}
+          className="absolute top-6 left-6 z-20 flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm transition-all hover:scale-105 active:scale-95 glass text-white"
+          style={{ border: "1px solid rgba(255,255,255,0.08)" }}
         >
           <ArrowLeft size={16} />
           Back
@@ -88,22 +87,21 @@ export default function Auth({ onAuthSuccess, onBack }: AuthProps) {
 
       {/* Card */}
       <div
-        className="relative z-10 w-full max-w-md rounded-3xl p-8 animate-slide-up"
-        style={{ background: "rgba(255,255,255,0.70)", border: "1px solid rgba(255,255,255,0.85)", backdropFilter: "blur(24px)", boxShadow: "0 16px 60px rgba(124,58,237,0.12)" }}
+        className="relative z-10 w-full max-w-md rounded-3xl p-8 animate-slide-up card"
       >
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg" style={{ background: "linear-gradient(135deg,#7c3aed,#f97316)" }}>
             <span style={{ fontSize: "26px" }}>🌴</span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight" style={{ color: "#1e1b4b" }}>Pool-n-Pay</h1>
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: "#ffffff" }}>Pool-n-Pay</h1>
           <p className="text-sm font-medium mt-1" style={{ color: "#94a3b8" }}>
             {mode === "signin" ? "Welcome back 👋" : "Create your account"}
           </p>
         </div>
 
         {/* Toggle */}
-        <div className="flex p-1 rounded-2xl mb-6" style={{ background: "rgba(237,233,254,0.6)" }}>
+        <div className="flex p-1 rounded-2xl mb-6" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
           {(["signin", "signup"] as const).map((m) => (
             <button
               key={m}
@@ -111,7 +109,7 @@ export default function Auth({ onAuthSuccess, onBack }: AuthProps) {
               className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all"
               style={
                 mode === m
-                  ? { background: "white", color: "#7c3aed", boxShadow: "0 2px 8px rgba(124,58,237,0.15)" }
+                  ? { background: "rgba(255,255,255,0.08)", color: "#ffffff", border: "1px solid rgba(255,255,255,0.06)", boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }
                   : { color: "#94a3b8" }
               }
             >

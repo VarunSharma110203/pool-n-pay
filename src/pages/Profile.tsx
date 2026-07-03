@@ -98,7 +98,7 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
   const fmt = (n: number) => `₹${Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
   return (
-    <div className="min-h-screen pb-28" style={{ background: "#f4f7f6" }}>
+    <div className="min-h-screen pb-28">
       {/* Hero */}
       <div className="gradient-tropical px-5 pt-14 pb-20 relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
@@ -127,20 +127,20 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
 
       <div className="px-4 -mt-8 space-y-4">
         {/* Balance Summary */}
-        <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 animate-slide-up">
-          <p className="section-heading mb-4">Balance Overview</p>
+        <div className="card rounded-3xl p-5 animate-slide-up">
+          <p className="section-heading mb-4 text-white">Balance Overview</p>
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-rose-50 rounded-2xl p-3.5 text-center border border-rose-100">
-              <p className="text-[10px] text-rose-400 font-bold mb-1 uppercase">You Owe</p>
-              <p className="money font-black text-rose-600 text-base">{fmt(balances.youOwe)}</p>
+            <div className="bg-rose-500/10 rounded-2xl p-3.5 text-center border border-rose-500/20">
+              <p className="text-[10px] text-rose-300 font-bold mb-1 uppercase">You Owe</p>
+              <p className="money font-black text-rose-400 text-base">{fmt(balances.youOwe)}</p>
             </div>
-            <div className="bg-emerald-50 rounded-2xl p-3.5 text-center border border-emerald-100">
-              <p className="text-[10px] text-emerald-500 font-bold mb-1 uppercase">Owed</p>
-              <p className="money font-black text-emerald-700 text-base">{fmt(balances.owedToYou)}</p>
+            <div className="bg-emerald-500/10 rounded-2xl p-3.5 text-center border border-emerald-500/20">
+              <p className="text-[10px] text-emerald-300 font-bold mb-1 uppercase">Owed</p>
+              <p className="money font-black text-emerald-400 text-base">{fmt(balances.owedToYou)}</p>
             </div>
-            <div className={`rounded-2xl p-3.5 text-center border ${ balances.net >= 0 ? 'bg-teal-50 border-teal-100' : 'bg-rose-50 border-rose-100' }`}>
-              <p className={`text-[10px] font-bold mb-1 uppercase ${ balances.net >= 0 ? 'text-teal-500' : 'text-rose-400' }`}>Net</p>
-              <p className={`money font-black text-base ${ balances.net >= 0 ? 'text-teal-700' : 'text-rose-600' }`}>
+            <div className={`rounded-2xl p-3.5 text-center border ${ balances.net >= 0 ? 'bg-teal-500/10 border-teal-500/20' : 'bg-rose-500/10 border-rose-500/20' }`}>
+              <p className={`text-[10px] font-bold mb-1 uppercase ${ balances.net >= 0 ? 'text-teal-300' : 'text-rose-300' }`}>Net</p>
+              <p className={`money font-black text-base ${ balances.net >= 0 ? 'text-teal-400' : 'text-rose-400' }`}>
                 {balances.net >= 0 ? "+" : ""}{fmt(balances.net)}
               </p>
             </div>
@@ -149,23 +149,23 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
 
         {/* Edit Form */}
         {editing && (
-          <div className="bg-white rounded-3xl shadow-md border border-teal-100 p-5 animate-scale-in">
+          <div className="card rounded-3xl p-5 animate-scale-in">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-bold text-slate-900 text-base">Edit Profile</h2>
-              <button onClick={() => setEditing(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-slate-500 hover:bg-gray-200">
+              <h2 className="font-bold text-white text-base">Edit Profile</h2>
+              <button onClick={() => setEditing(false)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:bg-white/10">
                 <X className="w-4 h-4" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">Display Name</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 block">Display Name</label>
                 <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Your name"
-                  className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-shadow" />
+                  className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm text-white transition-shadow" />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 block">UPI ID</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 block">UPI ID</label>
                 <input type="text" value={editUpi} onChange={(e) => setEditUpi(e.target.value)} placeholder="yourname@upi"
-                  className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-mono transition-shadow" />
+                  className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm font-mono text-white transition-shadow" />
                 <p className="text-xs text-slate-400 mt-1.5">Used to generate UPI payment QR codes</p>
               </div>
               <div className="flex gap-3 pt-1">
@@ -184,12 +184,12 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
         )}
 
         {/* Invite Code */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 animate-fade-in delay-100">
-          <p className="section-heading mb-4">Your Invite Code</p>
+        <div className="card rounded-3xl p-5 animate-fade-in delay-100">
+          <p className="section-heading mb-4 text-white">Your Invite Code</p>
           <div className="flex items-center gap-3">
-            <div className="flex-1 bg-teal-50 border border-teal-100 rounded-2xl px-4 py-3">
-              <p className="text-xs text-teal-600 font-medium mb-0.5">Share this to invite friends</p>
-              <p className="font-mono font-black text-teal-700 text-xl tracking-widest">{inviteCode}</p>
+            <div className="flex-1 bg-teal-500/10 border border-teal-500/20 rounded-2xl px-4 py-3">
+              <p className="text-xs text-teal-300 font-medium mb-0.5">Share this to invite friends</p>
+              <p className="font-mono font-black text-teal-400 text-xl tracking-widest">{inviteCode}</p>
             </div>
             <button onClick={copyInviteCode}
               className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all flex-shrink-0 ${ copiedCode ? 'bg-emerald-500' : 'gradient-tropical' }`}>
@@ -199,23 +199,23 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
         </div>
 
         {/* App Settings */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 animate-fade-in delay-150">
-          <p className="section-heading mb-1">App Settings</p>
-          <div className="divide-y divide-gray-50">
+        <div className="card rounded-3xl p-5 animate-fade-in delay-150">
+          <p className="section-heading mb-1 text-white">App Settings</p>
+          <div className="divide-y divide-white/5">
             <SettingRow
-              icon={<Bell className="w-5 h-5 text-teal-600" />} iconBg="bg-teal-50"
+              icon={<Bell className="w-5 h-5 text-teal-400" />} iconBg="bg-teal-500/10"
               title="Push Notifications" subtitle="Expense alerts & reminders"
               right={<Toggle enabled={pushNotif} onChange={setPushNotif} />}
             />
             <SettingRow
-              icon={<Volume2 className="w-5 h-5 text-orange-500" />} iconBg="bg-orange-50"
+              icon={<Volume2 className="w-5 h-5 text-orange-400" />} iconBg="bg-orange-500/10"
               title="Sound Effects" subtitle="Confetti & celebration sounds"
               right={<Toggle enabled={soundFx} onChange={setSoundFx} />}
             />
             <SettingRow
-              icon={<Smartphone className="w-5 h-5 text-violet-500" />} iconBg="bg-violet-50"
+              icon={<Smartphone className="w-5 h-5 text-violet-400" />} iconBg="bg-violet-500/10"
               title="Cloud Sync" subtitle="Data is securely synced to the cloud"
-              right={<span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Connected</span>}
+              right={<span className="text-[11px] font-bold badge-mint px-2.5 py-1 rounded-full">Connected</span>}
             />
           </div>
         </div>
@@ -224,28 +224,28 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
         <PwaInstallBanner page="profile" />
 
         {/* About */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 animate-fade-in delay-200">
-          <p className="section-heading mb-4">About</p>
+        <div className="card rounded-3xl p-5 animate-fade-in delay-200">
+          <p className="section-heading mb-4 text-white">About</p>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Version</span>
-              <span className="text-sm font-mono font-bold text-slate-400">v1.0.0</span>
+              <span className="text-sm text-slate-300">Version</span>
+              <span className="text-sm font-mono font-bold text-slate-500">v1.0.0</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Built with</span>
-              <span className="text-sm font-semibold text-teal-600">❤️ React + Tailwind</span>
+              <span className="text-sm text-slate-300">Built with</span>
+              <span className="text-sm font-semibold text-teal-400">❤️ React + Tailwind</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-600">Portfolio project</span>
+              <span className="text-sm text-slate-300">Portfolio project</span>
               <div className="flex items-center gap-1.5">
                 <Shield className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-sm font-semibold text-emerald-600">Varun Sharma</span>
+                <span className="text-sm font-semibold text-emerald-400">Varun Sharma</span>
               </div>
             </div>
           </div>
-          <div className="mt-4 bg-teal-50 border border-teal-100 rounded-2xl p-3.5 flex items-start gap-2.5">
-            <Info className="w-4 h-4 text-teal-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-teal-700 leading-relaxed">
+          <div className="mt-4 bg-teal-500/10 border border-teal-500/20 rounded-2xl p-3.5 flex items-start gap-2.5">
+            <Info className="w-4 h-4 text-teal-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-teal-300 leading-relaxed">
               Pool-n-Pay automatically syncs all trips, groups, and expenses to your cloud profile. Payment simulation is mock (no real transfers).
             </p>
           </div>
