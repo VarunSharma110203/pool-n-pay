@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { PlusCircle, X, ChevronLeft, ChevronRight, Check } from "lucide-react";
-import { dbService } from "../lib/firebaseClient";
+import { dbService, playCelebrationSound } from "../lib/firebaseClient";
 import GroupCard from "../components/GroupCard";
 import { GroupDetail } from "../components/GroupDetail";
 import confetti from "canvas-confetti";
@@ -147,6 +147,7 @@ export default function Trips({ profile }: Props) {
         await loadGroups();
         setActiveGroupId(gid);
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ["#14b8a6", "#3b82f6", "#10b981"] });
+        playCelebrationSound();
       } else {
         setJoinError("Invalid group code. Please check and try again.");
       }
@@ -173,6 +174,7 @@ export default function Trips({ profile }: Props) {
       setShowCreateModal(false);
       await loadGroups();
       confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, colors: ["#0d9488", "#06b6d4", "#10b981", "#f59e0b"] });
+      playCelebrationSound();
     } catch { } finally { setCreating(false); }
   };
 

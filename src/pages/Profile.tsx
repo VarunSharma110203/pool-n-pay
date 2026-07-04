@@ -28,7 +28,7 @@ function getInitials(name: string) {
 function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean) => void }) {
   return (
     <button onClick={() => onChange(!enabled)}
-      className={`relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none ${ enabled ? "bg-teal-500" : "bg-gray-200" }`}>
+      className={`relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none cursor-pointer ${ enabled ? "bg-teal-500" : "bg-white/10 border border-white/5" }`}>
       <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-300 ${ enabled ? "translate-x-6" : "translate-x-0" }`} />
     </button>
   );
@@ -40,7 +40,7 @@ function SettingRow({ icon, iconBg, title, subtitle, right }: { icon: React.Reac
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 ${iconBg} rounded-2xl flex items-center justify-center flex-shrink-0`}>{icon}</div>
         <div>
-          <p className="font-semibold text-slate-800 text-sm">{title}</p>
+          <p className="font-semibold text-white text-sm">{title}</p>
           <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
         </div>
       </div>
@@ -55,10 +55,12 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
   const [editName, setEditName] = useState(profile.name);
   const [editUpi, setEditUpi] = useState(profile.upi_id || "");
   const [saving, setSaving] = useState(false);
-  const [pushNotif, setPushNotif] = useState(true);
-  const [soundFx, setSoundFx] = useState(true);
+  const [pushNotif, setPushNotif] = useState(() => localStorage.getItem("pnp_push_notifications") !== "false");
+  const [soundFx, setSoundFx] = useState(() => localStorage.getItem("pnp_sound_effects") !== "false");
   const [toast, setToast] = useState({ message: "", show: false });
   const [copiedCode, setCopiedCode] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncTime, setSyncTime] = useState("Just now");
 
   const inviteCode = getInviteCode();
 
@@ -75,6 +77,59 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
   }, []);
 
   useEffect(() => { loadBalances(); }, [loadBalances]);
+
+  const handlePushNotifChange = (enabled: boolean) => {
+    setPushNotif(enabled);
+    localStorage.setItem("pnp_push_notifications", String(enabled));
+    if (enabled && "Notification" in window) {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          new Notification("Pool-n-Pay 🌴", {
+            body: "Push Notifications Enabled! You will receive transaction alerts.",
+            icon: "/pwa-192x192.png"
+          });
+        }
+      });
+    }
+  };
+
+  const handleSoundFxChange = (enabled: boolean) => {
+    setSoundFx(enabled);
+    localStorage.setItem("pnp_sound_effects", String(enabled));
+    if (enabled) {
+      // Synthesize a quick cute chiptune sound to preview
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, now); // D5
+        osc.frequency.setValueAtTime(880, now + 0.08); // A5
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } catch (e) {
+        console.error("Audio error:", e);
+      }
+    }
+  };
+
+  const handleManualSync = async () => {
+    setSyncing(true);
+    try {
+      await loadBalances();
+      setSyncTime("Just now");
+      showToast("Cloud sync complete! ☁️");
+    } catch {
+      showToast("Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!editName.trim()) return;
@@ -205,17 +260,25 @@ export default function ProfilePage({ profile, onProfileUpdated, onLogout }: Pro
             <SettingRow
               icon={<Bell className="w-5 h-5 text-teal-400" />} iconBg="bg-teal-500/10"
               title="Push Notifications" subtitle="Expense alerts & reminders"
-              right={<Toggle enabled={pushNotif} onChange={setPushNotif} />}
+              right={<Toggle enabled={pushNotif} onChange={handlePushNotifChange} />}
             />
             <SettingRow
               icon={<Volume2 className="w-5 h-5 text-orange-400" />} iconBg="bg-orange-500/10"
               title="Sound Effects" subtitle="Confetti & celebration sounds"
-              right={<Toggle enabled={soundFx} onChange={setSoundFx} />}
+              right={<Toggle enabled={soundFx} onChange={handleSoundFxChange} />}
             />
             <SettingRow
               icon={<Smartphone className="w-5 h-5 text-violet-400" />} iconBg="bg-violet-500/10"
-              title="Cloud Sync" subtitle="Data is securely synced to the cloud"
-              right={<span className="text-[11px] font-bold badge-mint px-2.5 py-1 rounded-full">Connected</span>}
+              title="Cloud Sync" subtitle={`Last synced: ${syncTime}`}
+              right={
+                <button
+                  onClick={handleManualSync}
+                  disabled={syncing}
+                  className="text-[11px] font-bold badge-mint px-2.5 py-1 rounded-full cursor-pointer hover:brightness-110 active:scale-95 transition-all"
+                >
+                  {syncing ? "Syncing..." : "Sync Now"}
+                </button>
+              }
             />
           </div>
         </div>

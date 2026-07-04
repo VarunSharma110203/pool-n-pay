@@ -16,7 +16,7 @@ import {
   Check,
   Pencil,
 } from "lucide-react";
-import { dbService, timeAgo, db } from "../lib/firebaseClient";
+import { dbService, timeAgo, db, playCelebrationSound, playPaymentSound } from "../lib/firebaseClient";
 import { doc, updateDoc, collection, addDoc } from "firebase/firestore";
 import confetti from "canvas-confetti";
 
@@ -161,6 +161,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
         origin: { y: 0.6 },
         colors: ["#0d9488", "#f43f5e", "#f97316"],
       });
+      playPaymentSound();
     } catch (err) {
       console.error(err);
     }
@@ -184,6 +185,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
           spread: 80,
           colors: ["#14b8a6", "#22c55e", "#fef08a"],
         });
+        playPaymentSound();
       } else {
         const ownerFriend = friends.find(f => f.name === poolOwner);
         const ownerUpi = ownerFriend?.upi_id || poolOwner.toLowerCase().replace(/\s+/g, '') + '@upi';
@@ -218,6 +220,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
         origin: { y: 0.6 },
         colors: ["#10b981", "#34d399", "#a7f3d0"]
       });
+      playPaymentSound();
       
       setActiveQrData(null);
       fetchGroupDetails();
@@ -251,6 +254,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
           spread: 100,
           colors: ["#10b981", "#3b82f6", "#f59e0b"],
         });
+        playCelebrationSound();
 
         fetchGroupDetails();
       } catch (err) {
@@ -1490,6 +1494,7 @@ export const GroupDetail: React.FC<GroupDetailProps> = ({
                           spread: 80,
                           colors: ["#14b8a6", "#22c55e", "#fef08a"],
                         });
+                        playPaymentSound();
                         fetchGroupDetails();
                       } catch(err) { console.error(err); }
                     } else {
