@@ -211,9 +211,9 @@ export default function Trips({ profile }: Props) {
             </button>
             <button
               onClick={openCreateModal}
-              className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg hover:scale-105 transition-transform active:scale-95 btn-ripple"
+              className="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center shadow-lg hover:scale-105 transition-transform active:scale-95 btn-ripple cursor-pointer text-white hover:bg-white/30"
             >
-              <PlusCircle className="w-6 h-6 text-teal-600" />
+              <PlusCircle className="w-6 h-6" />
             </button>
           </div>
         </div>
@@ -247,7 +247,7 @@ export default function Trips({ profile }: Props) {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-5 py-2.5 rounded-full text-sm font-bold capitalize flex-shrink-0 transition-all duration-200 shadow-sm ${
-                filter === f ? "gradient-tropical text-white shadow-md scale-105" : "bg-white text-slate-600 border border-gray-100 hover:bg-gray-50"
+                filter === f ? "gradient-tropical text-white shadow-md scale-105" : "glass text-slate-300 border border-white/5 hover:bg-white/5"
               }`}
             >
               {f === "all" ? "🗺️ All" : f === "split" ? "✂️ Split" : "🎯 Pool"}
@@ -259,33 +259,33 @@ export default function Trips({ profile }: Props) {
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 h-24">
+              <div key={i} className="card rounded-2xl p-4 h-24">
                 <div className="flex items-center gap-3 animate-pulse">
-                  <div className="w-14 h-14 rounded-2xl bg-gray-100" />
+                  <div className="w-14 h-14 rounded-2xl bg-white/5" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-gray-100 rounded-full w-2/3" />
-                    <div className="h-3 bg-gray-50 rounded-full w-1/2" />
+                    <div className="h-4 bg-white/5 rounded-full w-2/3" />
+                    <div className="h-3 bg-white/5 rounded-full w-1/2" />
                   </div>
-                  <div className="h-5 bg-gray-100 rounded-full w-16" />
+                  <div className="h-5 bg-white/5 rounded-full w-16" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredGroups.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-12 text-center animate-fade-in">
+          <div className="card rounded-3xl p-12 text-center animate-fade-in">
             <div className="text-6xl mb-4 animate-float">🏝️</div>
-            <p className="font-black text-slate-800 text-xl mb-1">No groups yet!</p>
+            <p className="font-black text-white text-xl mb-1">No groups yet!</p>
             <p className="text-slate-400 text-sm mb-6">Create your first group adventure</p>
             <div className="flex justify-center gap-3">
               <button
                 onClick={openCreateModal}
-                className="px-6 py-3 rounded-2xl gradient-tropical text-white font-bold text-sm shadow-md hover:opacity-90 transition-opacity btn-ripple"
+                className="px-6 py-3 rounded-2xl gradient-tropical text-white font-bold text-sm shadow-md hover:opacity-90 transition-opacity btn-ripple cursor-pointer"
               >
                 + Create Group
               </button>
               <button
                 onClick={() => setShowJoinModal(true)}
-                className="px-6 py-3 rounded-2xl border border-teal-200 text-teal-600 bg-white font-bold text-sm shadow-sm hover:bg-teal-50 transition-colors"
+                className="px-6 py-3 rounded-2xl border border-white/10 text-white bg-white/5 font-bold text-sm shadow-sm hover:bg-white/10 transition-colors cursor-pointer"
               >
                 Join with Code
               </button>
@@ -314,9 +314,9 @@ export default function Trips({ profile }: Props) {
             {/* Floating create button at the end */}
             <button
               onClick={openCreateModal}
-              className="w-full py-4 rounded-2xl border-2 border-dashed border-teal-200 bg-teal-50/50 text-teal-600 font-bold text-sm flex items-center justify-center gap-2 hover:bg-teal-50 hover:border-teal-300 transition-all"
+              className="w-full py-4 rounded-2xl border-2 border-dashed border-white/10 hover:border-white/25 bg-white/5 hover:bg-white/10 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-4 h-4 text-violet-300" />
               New Group
             </button>
           </div>
